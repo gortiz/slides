@@ -107,7 +107,7 @@ Segment 2
 
 ---
 
-![h:700](query.png)
+![h:700](query.svg)
 
 ---
 
