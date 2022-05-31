@@ -14,8 +14,8 @@ sequenceDiagram
      Server ->> Server: pruning by schema
      Server ->> Server: pruning by data
      Server ->> Server: execution
-     Server ->>- Broker: response
+     Server ->>- Broker: partial result
    end
    
-   Broker ->>- Customer:  
+   Broker ->>- Customer:  total result
 ```

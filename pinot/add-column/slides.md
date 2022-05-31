@@ -168,7 +168,7 @@ What happens between 3 and 12?
 
 ---
 
-![h:700](query.png)
+![h:700](query.svg)
 
 ---
 
