@@ -247,7 +247,7 @@ These queries work as expected
 
 | query | old | new |
 |:---|---|---|
-| select * from t1 | (v211, v221, true), (v212, v222, false) | (v111, v121, null), (v121, v122, null), (v211, v221, true), (v212, v222, false) |
+| select * from t1 | (v211, v221, true), (v212, v222, false) | (v111, v112, null), (v121, v122, null), (v211, v221, true), (v212, v222, false) |
 | select count(*) from t1 | 4 | 4 |
 
 👍
@@ -293,7 +293,7 @@ These queries work as expected
 <div>
 
 old 
-![h:600](query.png)
+![h:600](query.svg)
 
 </div>
 <div>
