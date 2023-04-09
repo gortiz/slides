@@ -1,0 +1,15 @@
+#port: 6275
+#dest: build
+#out: index.html
+#source: slides.md
+title: ''
+#assets: ['assets']
+#css: ''
+#cssFiles: []
+#script: ''
+#scriptFiles: []
+#remarkConfig: {}
+#remarkPath: moduleDir + '/vendor/remark.js'
+#scriptFilesAfterCreate: []
+#livereload: true
+#livereloadPort: 35729
