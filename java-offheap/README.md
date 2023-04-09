@@ -2,7 +2,7 @@
 
 ## First time
 ```sh
-ln -s ../libs lib
+ln -s ../.libs libs
 ```
 
 ## Run
