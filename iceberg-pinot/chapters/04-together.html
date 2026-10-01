@@ -1,0 +1,260 @@
+<section class="layout-chapter">
+  <div class="chapter">
+    <span class="num">CHAPTER 3</span>
+    <span class="name">Iceberg ♥ Pinot</span>
+    <span class="tagline">Same shape, so no copy</span>
+  </div>
+</section>
+
+<section class="layout-full">
+  <h2>Same shape</h2>
+  <table class="grid">
+    <thead><tr><th>Iceberg</th><th>Pinot</th></tr></thead>
+    <tbody>
+      <tr><td>Data file, immutable</td><td>Segment, immutable</td></tr>
+      <tr class="fragment"><td>Manifest stats</td><td>Broker pruning metadata</td></tr>
+      <tr class="fragment"><td>Snapshot</td><td>A routable segment set</td></tr>
+      <tr class="fragment"><td>Partition spec</td><td>Segment partitioning</td></tr>
+      <tr class="fragment"><td>Deletion vector</td><td>Valid-doc bitmap (upserts)</td></tr>
+      <tr class="fragment"><td>Snapshot expiry</td><td>Retention</td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">
+    Close the cold open: this is why the two unlabeled diagrams looked the same. Then say where the
+    mapping breaks: Iceberg files carry no indexes, and the writer decides their size, not Pinot.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>One file, one segment</h2>
+  <ul class="points">
+    <li>Name = hash of the file path</li>
+    <li>Paths never change content</li>
+    <li class="fragment">Segment holds no data</li>
+    <li class="fragment">Its forward index is the Parquet file</li>
+  </ul>
+  <figure class="diagram todo">Parquet file in the Iceberg bucket; a thin Pinot segment (metadata + indexes) pointing at it</figure>
+  <aside class="notes">
+    murmur3_128(dataFilePath). Sound only because Iceberg never rewrites a committed file. The segment is
+    metadata, indexes, and a pointer to the Parquet file. It lives on the table's S3 tier like any
+    tiered-storage segment.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>From catalog to query</h2>
+  <ol class="points">
+    <li>Controller reads the snapshot</li>
+    <li class="fragment">New file: footer only, tiny segment</li>
+    <li class="fragment">Server builds indexes, stores them on S3</li>
+    <li class="fragment">Snapshot published</li>
+    <li class="fragment">Broker pins it per query</li>
+  </ol>
+  <figure class="diagram todo">message animation across catalog, controller, deep store, server, broker, S3; each step lights its arrow</figure>
+  <aside class="notes">
+    The controller never reads data, only footers. The server builds every index at load by reading the
+    indexed columns once, then uploads the segment (metadata + indexes, no data) to the table's S3 tier.
+    Later loads reuse it while segment and index config are unchanged. Say the price: one read per indexed
+    column per segment, and index storage (270 GB on 770 GB in the published benchmark).
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Reading without a copy</h2>
+  <ul class="points">
+    <li>Indexes give exact doc IDs</li>
+    <li class="fragment">Page index gives byte ranges</li>
+    <li class="fragment">Ranged GETs, only those pages</li>
+    <li class="fragment">512 MB file, 0.5 MB read</li>
+  </ul>
+  <figure class="diagram todo">redraw of the published page-fetch figure: row groups, chunks, pages with ticks and crosses; byte counter shows 0.5 MB</figure>
+  <aside class="notes">
+    The persisted page index is about 32 to 36 bytes per page, memory-mapped, and embeds the footer.
+    Built once per segment because writers do not reliably write Parquet's own page index.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Where the rows go</h2>
+  <ul class="points">
+    <li>12.2 billion rows</li>
+    <li class="fragment">Segment pruning: 3.9 billion</li>
+    <li class="fragment">Indexes: 80 million</li>
+    <li class="fragment">99.3% never read</li>
+  </ul>
+  <figure class="diagram todo">the chapter 1 funnel again, now with real numbers, ending far below where min/max stopped</figure>
+  <aside class="notes">
+    Q2 of the published StarTree benchmark (770 GB of Parquet on S3). Segment pruning plays the role of Iceberg's
+    manifest pruning; the indexes do what min/max cannot. For the map-column query the funnel ends at 25 rows.
+  </aside>
+</section>
+
+<section class="layout-full">
+  <h2>Same Parquet, same hardware</h2>
+  <table class="grid">
+    <thead><tr><th>Cold, ms</th><th>StarTree</th><th>Trino</th><th>ClickHouse</th></tr></thead>
+    <tbody>
+      <tr><td>Filtered count</td><td class="yes">491</td><td>10,237</td><td>19,200</td></tr>
+      <tr><td>Selective aggregation</td><td class="yes">515</td><td>4,886</td><td>6,634</td></tr>
+      <tr><td>Time-bucketed aggregation</td><td class="yes">645</td><td>5,486</td><td>7,451</td></tr>
+      <tr><td>Map-column aggregation</td><td class="yes">2,390</td><td>9,219</td><td>26,973</td></tr>
+      <tr class="fragment"><td>Network in, GB</td><td class="yes">4.2</td><td>19.3</td><td>20.5</td></tr>
+    </tbody>
+  </table>
+  <p class="footnote">StarTree benchmark: 12.2 B rows, 770 GB Parquet on S3, 4 × r6gd.4xlarge for every engine. Trino 476 (Iceberg connector), ClickHouse 26.2 (icebergS3Cluster). Indexes add 270 GB.</p>
+  <aside class="notes">
+    Our own benchmark, so say so, and give the methodology: same data, same hardware, every engine reads the same
+    Parquet; ClickHouse native MergeTree excluded because it is a copy. Lead with network in: 4.2 GB versus about
+    20 GB is the physics argument in one number. Mention the cost honestly: 270 GB of indexes on 770 GB of data.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Two questions decide everything</h2>
+  <ul class="points">
+    <li>Did you create indexes?</li>
+    <li class="fragment">Can the query use them?</li>
+    <li class="fragment">Either "no": a scan, like everyone</li>
+    <li class="fragment">Both "yes": read only what you need</li>
+  </ul>
+  <figure class="diagram todo">two-question decision diagram ending in "remote scan + cache" or "pruned page reads"</figure>
+  <aside class="notes">
+    External Tables are one feature. Indexes are optional. Without them, or for a query that cannot use
+    them, Pinot reads Parquet like any other engine.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>You cannot beat physics</h2>
+  <ul class="points">
+    <li>Need every value? Move every byte</li>
+    <li class="fragment">From S3: pay per query</li>
+    <li class="fragment">Local copy: pay storage and sync</li>
+    <li class="fragment">Indexes change how many bytes</li>
+  </ul>
+  <figure class="diagram todo">spectrum from "local copy" to "remote scan": Pinot native · tiered storage · External Tables spanning the middle</figure>
+  <aside class="notes">
+    The honest message. Pinot covers both ends, and External Tables give it the middle. Ask before the
+    talk whether one table can be native realtime for recent data and external for history.
+  </aside>
+</section>
+
+<section class="layout-full">
+  <h2>How engines read Iceberg, completed</h2>
+  <table class="grid">
+    <thead><tr><th>Engine</th><th>Local copy</th><th>Remote scan + cache</th><th>Local indexes on remote data</th></tr></thead>
+    <tbody>
+      <tr><td>Trino / Athena</td><td class="no">—</td><td class="yes">✓</td><td class="no">✗</td></tr>
+      <tr><td>Spark</td><td class="no">—</td><td class="yes">✓</td><td class="no">✗</td></tr>
+      <tr><td>DuckDB</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
+      <tr><td>Dremio</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
+      <tr><td>Snowflake</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
+      <tr><td>BigQuery</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
+      <tr><td>StarRocks / Doris</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
+      <tr><td>ClickHouse</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
+      <tr class="highlight"><td>StarTree Pinot</td><td class="yes">✓ native</td><td class="yes">✓ External Tables</td><td class="yes">✓ External Tables + indexes</td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">
+    DRAFT, NOT VERIFIED. Callback to the end of chapter 1. Every "?" needs research; keep a "?" on the
+    slide rather than guess.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Never mix two snapshots</h2>
+  <ul class="points">
+    <li>Compaction: 10 files become 1</li>
+    <li class="fragment">Mix before and after?</li>
+    <li class="fragment">Rows twice, or not at all</li>
+    <li class="fragment">Broker pins one snapshot per query</li>
+  </ul>
+  <figure class="diagram todo">snapshot S1 with 10 small files, S2 with 1 big file; a query reading both counts rows twice</figure>
+  <aside class="notes">
+    Each snapshot is a final.parquet in Pinot's deep store; the broker routes only to its segments and
+    fails closed if it cannot pin one. Segment groups keep this workable with millions of files:
+    content-addressed names make retries idempotent and reuse unchanged groups across snapshots.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>What to keep local</h2>
+  <ul class="points">
+    <li>Cold, nothing local: ~0.5 s</li>
+    <li class="fragment">Pinned indexes: needed for QPS</li>
+    <li class="fragment">Page cache: helps scans</li>
+    <li class="fragment">…and can hurt selective queries</li>
+  </ul>
+  <figure class="diagram todo">two small bar groups: latency by cache mode (no cache / index pinning / pinning + page cache) for Q1–Q4</figure>
+  <aside class="notes">
+    From the published benchmark: Q2 is 515 ms cold, 483 ms with index pinning, 1,211 ms with pinning plus the
+    disk page cache. For index-driven queries, caching data pages adds overhead. The older throughput chart
+    (image-30) shows the other side: without anything local, concurrent throughput collapses (filters 80 QPS,
+    aggregations 20). Single query latency and sustained QPS are different questions.
+  </aside>
+</section>
+
+<section class="layout-full">
+  <h2>Versus native Pinot</h2>
+  <table class="grid">
+    <thead><tr><th></th><th>Native segment</th><th>External segment</th></tr></thead>
+    <tbody>
+      <tr><td>Values</td><td>Local, Pinot format</td><td>S3, Parquet</td></tr>
+      <tr><td>Segment size</td><td>Pinot decides</td><td>The writer decides</td></tr>
+      <tr><td>Dictionary</td><td>Pinot's</td><td>Pinot's, built on load</td></tr>
+      <tr><td>Cold read</td><td>Local disk</td><td>S3 latency</td></tr>
+      <tr><td>Freshness</td><td>Realtime possible</td><td>Writer commits + sync</td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">
+    Parquet's per-chunk dictionaries are only an encoding; Pinot remaps them to its own dictionary IDs.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Write Iceberg for its readers</h2>
+  <ul class="points">
+    <li>Sort by the filter key</li>
+    <li>Sane file and row-group sizes</li>
+    <li>v3 deletion vectors</li>
+    <li>Compact on a schedule</li>
+  </ul>
+  <figure class="diagram todo">before/after: scattered user_id ranges vs sorted, tight ranges</figure>
+  <aside class="notes">
+    Advice that helps every engine, not only Pinot. Comcast cut 35 to 40 percent of scanned data just by
+    partitioning and sorting by device ID. Pinot applies deletion vectors only; older delete files are not
+    applied, so prefer v3 DVs.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Configure Pinot for your queries</h2>
+  <ul class="points">
+    <li>Index what you filter on</li>
+    <li>Star-tree for dashboards</li>
+    <li>Size the cache</li>
+    <li>Same region as the bucket</li>
+  </ul>
+  <figure class="diagram todo">checklist card with a small cost note next to each item</figure>
+  <aside class="notes">
+    Every index costs one read of its column when the segment is first processed, plus storage on the S3
+    tier. Ranged S3 reads are region-strict.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Pick the mode</h2>
+  <ul class="points">
+    <li>Selective, high QPS: External Tables + indexes</li>
+    <li class="fragment">Full scans, high QPS: local copy</li>
+    <li class="fragment">Ad-hoc exploration: a scan engine</li>
+    <li class="fragment">Sub-second freshness: realtime</li>
+  </ul>
+  <figure class="diagram todo">decision tree from "what does the query need?" to the four modes</figure>
+  <aside class="notes">
+    Say plainly where Pinot is not the answer: ad-hoc exploration over everything is Trino's job.
+    Pinot's strength is covering the modes that a product feature needs. Counter-example worth citing: Comcast
+    serves a 107 QPS internal API (p95 under 800 ms) straight from S3 Tables with Lambda, no indexes, because
+    the data is partitioned and sorted by the lookup key. Clustered data makes the scan mode viable.
+  </aside>
+</section>

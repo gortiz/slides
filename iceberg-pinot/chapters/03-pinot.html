@@ -1,0 +1,120 @@
+<section class="layout-chapter">
+  <div class="chapter">
+    <span class="num wine">CHAPTER 2</span>
+    <span class="name">Pinot</span>
+    <span class="tagline">Analytics as a product feature</span>
+  </div>
+</section>
+
+<section class="layout-split">
+  <h2>Why Pinot exists</h2>
+  <ul class="points">
+    <li>"Who viewed your profile"</li>
+    <li>Analytics for every user</li>
+    <li>Thousands of queries per second</li>
+    <li>Milliseconds, not seconds</li>
+  </ul>
+  <figure class="diagram todo">a phone showing a personal stats card; behind it a stream of concurrent queries</figure>
+  <aside class="notes">
+    A warehouse serves a few analysts. Pinot serves every user of the product, so concurrency and tail
+    latency come first. Tie back to plays: "your week in music" is the same shape of problem.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>The moving parts</h2>
+  <ul class="points">
+    <li><strong>Controller:</strong> metadata, assignment</li>
+    <li><strong>Broker:</strong> plans, routes, merges</li>
+    <li><strong>Server:</strong> stores, executes</li>
+    <li><strong>Minion:</strong> background jobs</li>
+    <li>ZooKeeper + deep store</li>
+  </ul>
+  <figure class="diagram todo">four service boxes, ZooKeeper (Helix) in the middle, deep store below</figure>
+  <aside class="notes">Keep it to what the following diagrams need. Unlike Iceberg, these are running servers.</aside>
+</section>
+
+<section class="layout-split">
+  <h2>Tables all the way down</h2>
+  <ul class="points">
+    <li>Table</li>
+    <li class="fragment">Partitions</li>
+    <li class="fragment">Segments: immutable, columnar</li>
+    <li class="fragment">Indexes per column</li>
+  </ul>
+  <figure class="diagram todo">nested boxes: table → partitions → segments → per-column index files (forward, dictionary, inverted, range, star-tree)</figure>
+  <aside class="notes">
+    A segment is self-contained: its own dictionaries, forward index, other indexes, and metadata.
+    Each index is a plug-in per column. That detail is what makes chapter 3 possible.
+  </aside>
+</section>
+
+<section class="layout-split even">
+  <h2>Min/max versus an index</h2>
+  <ul class="points">
+    <li>Min/max: "which files might"</li>
+    <li class="fragment">Inverted index: "which rows"</li>
+    <li class="fragment">Star-tree: pre-aggregated answers</li>
+  </ul>
+  <figure class="diagram todo">same query as the "min/max gives up" slide; inverted index jumps straight to the matching doc IDs; byte counter drops</figure>
+  <aside class="notes">Callback to chapter 1. This is the gap Pinot was designed around.</aside>
+</section>
+
+<section class="layout-split">
+  <h2>A query, end to end</h2>
+  <ol class="points">
+    <li>Broker prunes segments</li>
+    <li class="fragment">Scatter to servers</li>
+    <li class="fragment">Servers use indexes</li>
+    <li class="fragment">Broker merges results</li>
+  </ol>
+  <figure class="diagram todo">message animation: client → broker → three servers → broker → client, with segments greyed out when pruned</figure>
+  <aside class="notes">The broker prunes on metadata before any server reads a byte. Same idea as Iceberg manifests.</aside>
+</section>
+
+<section class="layout-split">
+  <h2>Offline ingestion</h2>
+  <ol class="points">
+    <li>Job builds a segment</li>
+    <li class="fragment">Upload to deep store</li>
+    <li class="fragment">Controller registers it</li>
+    <li class="fragment">Servers download and serve</li>
+  </ol>
+  <figure class="diagram todo">sequence: batch job → deep store → controller → ZooKeeper → servers</figure>
+  <aside class="notes">
+    Say the parallel out loud: build an immutable file, store it, flip the metadata. That is an Iceberg
+    commit, written years earlier by a different team.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Realtime ingestion</h2>
+  <ol class="points">
+    <li>Servers consume a Kafka partition</li>
+    <li class="fragment">Rows are queryable at once</li>
+    <li class="fragment">Segment fills up</li>
+    <li class="fragment">One replica commits it</li>
+    <li class="fragment">It becomes immutable</li>
+  </ol>
+  <figure class="diagram todo">Kafka → consuming segment on 2 replicas → controller picks a committer → segment to deep store → ONLINE</figure>
+  <aside class="notes">
+    Low-level consumer only, happy path only. The message to keep: even realtime data ends up as an
+    immutable segment. Freshness comes back in the "when to use" section.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Tiered storage</h2>
+  <ul class="points">
+    <li>Segments stay in S3</li>
+    <li>Read on demand</li>
+    <li>Pin hot indexes locally</li>
+    <li class="fragment">What if the files were not ours?</li>
+  </ul>
+  <figure class="diagram todo">server with a small local disk (pinned indexes, cache) reading pages from Pinot segments in S3</figure>
+  <aside class="notes">
+    StarTree feature. The bridge to chapter 3, and more than a metaphor: an External Table segment IS a
+    tiered-storage segment on an S3 tier. The only difference is that its forward index points at
+    Parquet somebody else wrote.
+  </aside>
+</section>

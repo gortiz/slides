@@ -1,0 +1,345 @@
+/*
+ * Shared reveal.js theme for Gonzalo's talks.
+ *
+ * Every slide uses the same frame: a fixed title row, a body, and a footer. The loader wraps each
+ * <section>'s content in <div class="frame">, so authors write flat markup (h2, ul, figure).
+ * Pick a layout with a class on <section>; see README.md for the list.
+ *
+ * Canvas: 1280x720. All sizes below are in canvas pixels; reveal.js scales the whole canvas.
+ */
+@import url("fonts/fonts.css");
+
+:root {
+  /* palette */
+  --ground: #F7F8F8;
+  --surface: #FFFFFF;
+  --surface-sunk: #ECF0F0;
+  --ink: #121A1D;
+  --ink-soft: #3A4A50;
+  --muted: #64767C;
+  --rule: #D5DDDE;
+  --accent-1: #0C6F79;      /* first actor, e.g. Iceberg */
+  --accent-1-wash: #DDEFF0;
+  --accent-2: #8B2F3E;      /* second actor, e.g. Pinot */
+  --accent-2-wash: #F4E3E6;
+  --accent-3: #9A6400;      /* warnings, costs */
+  --accent-3-wash: #F6ECD8;
+
+  /* type */
+  --font-title: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --font-hand: "Kalam", "Comic Sans MS", cursive;
+
+  /* frame geometry: change here, never per slide */
+  --pad-top: 52px;
+  --pad-x: 72px;
+  --pad-bottom: 34px;
+  --title-row: 84px;
+  --footer-row: 26px;
+  --gap: 44px;
+}
+
+/* ---------- base ---------- */
+html, body { background: var(--ground); }
+.reveal { font-family: var(--font-body); font-size: 30px; color: var(--ink); }
+.reveal .slides { text-align: left; }
+.reveal .slides > section,
+.reveal .slides > section > section {
+  height: 100%;
+  padding: 0;
+}
+.reveal .frame {
+  position: absolute;
+  inset: 0;
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  display: grid;
+  grid-template-rows: var(--title-row) 1fr var(--footer-row);
+  grid-template-columns: 1fr;
+  grid-template-areas: "title" "body" "footer";
+  column-gap: var(--gap);
+}
+
+/* ---------- title row: identical position on every slide ---------- */
+.reveal .frame > h2 {
+  grid-area: title;
+  align-self: start;
+  margin: 0;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 46px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-transform: none;
+  text-wrap: balance;
+}
+.reveal .frame > h2 .sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+/* ---------- footer: chapter left, slide number right ---------- */
+.reveal .frame::after {
+  content: attr(data-chapter);
+  grid-area: footer;
+  align-self: end;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.reveal .slide-number {
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  right: 72px;
+  bottom: 30px;
+}
+
+/* ---------- text primitives ---------- */
+.reveal p { margin: 0; line-height: 1.35; }
+.reveal strong { font-weight: 600; }
+.reveal em { font-style: italic; }
+.reveal code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--surface-sunk);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.reveal ul.points, .reveal ol.points {
+  margin: 0;
+  padding: 0 0 0 1.05em;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  line-height: 1.25;
+}
+.reveal ul.points li::marker { color: var(--accent-1); }
+.reveal ol.points li::marker { color: var(--accent-1); font-family: var(--font-mono); font-size: 0.8em; }
+.reveal .points ul {
+  margin: 8px 0 0;
+  padding-left: 1em;
+  font-size: 0.82em;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reveal .footnote {
+  font-size: 18px;
+  color: var(--muted);
+  margin-top: auto;
+}
+.reveal .ice { color: var(--accent-1); }
+.reveal .wine { color: var(--accent-2); }
+.reveal .warn { color: var(--accent-3); }
+
+/* ---------- diagram slot ---------- */
+.reveal figure.diagram {
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal figure.diagram > svg,
+.reveal figure.diagram > img { max-width: 100%; max-height: 100%; }
+/* Placeholder until the real diagram exists: the label says what goes here. */
+.reveal figure.diagram.todo {
+  border: 2px dashed var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 24px;
+  font-family: var(--font-hand);
+  font-size: 24px;
+  line-height: 1.35;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- layouts ---------- */
+
+/* split: bullets left, diagram right (default 5:7) */
+.reveal section.layout-split .frame {
+  grid-template-columns: 5fr 7fr;
+  grid-template-areas: "title title" "left right" "footer footer";
+}
+.reveal section.layout-split.even .frame { grid-template-columns: 1fr 1fr; }
+.reveal section.layout-split .frame > :not(h2):not(figure) { grid-area: left; align-self: start; padding-top: 8px; }
+.reveal section.layout-split .frame > figure { grid-area: right; }
+.reveal section.layout-split .left-stack { display: flex; flex-direction: column; gap: 24px; height: 100%; }
+
+/* full: one diagram or table under the title */
+.reveal section.layout-full .frame > :not(h2) { grid-area: body; min-height: 0; }
+
+/* statement: one sentence, no title row */
+.reveal section.layout-statement .frame { grid-template-areas: "." "body" "footer"; }
+.reveal section.layout-statement .frame > blockquote,
+.reveal section.layout-statement .frame > p {
+  grid-area: body;
+  align-self: center;
+  margin: 0;
+  max-width: 1000px;
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 54px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  width: auto;
+  font-style: normal;
+}
+.reveal section.layout-statement cite {
+  display: block;
+  margin-top: 22px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* chapter divider: number + name, same position on every divider */
+.reveal section.layout-chapter .frame { grid-template-areas: "." "body" "footer"; }
+.reveal section.layout-chapter .frame > .chapter {
+  grid-area: body;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reveal section.layout-chapter .chapter .num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  letter-spacing: 0.2em;
+  color: var(--accent-1);
+}
+.reveal section.layout-chapter .chapter .name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 96px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.reveal section.layout-chapter .chapter .tagline {
+  font-size: 30px;
+  color: var(--muted);
+  max-width: 900px;
+}
+
+/* cover */
+.reveal section.layout-cover .frame { grid-template-areas: "." "body" "footer"; }
+.reveal section.layout-cover .frame > .cover {
+  grid-area: body;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.reveal section.layout-cover .cover h1 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 76px;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: var(--ink);
+  max-width: 1050px;
+  text-wrap: balance;
+}
+.reveal section.layout-cover .cover .deck { font-size: 32px; color: var(--ink-soft); }
+.reveal section.layout-cover .cover .who {
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ---------- tables ---------- */
+.reveal table.grid {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 26px;
+  align-self: start;
+}
+.reveal table.grid th {
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--ink);
+}
+.reveal table.grid td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.reveal table.grid td:first-child { font-weight: 600; }
+.reveal table.grid .yes { color: var(--accent-1); font-weight: 600; }
+.reveal table.grid .no { color: var(--muted); }
+.reveal table.grid .unk { color: var(--accent-3); font-weight: 600; }
+.reveal table.grid tr.highlight td { background: var(--accent-2-wash); }
+
+/* ---------- fragments: dim instead of hiding when wanted ---------- */
+.reveal .fragment.dim-past.visible:not(.current-fragment) { opacity: 0.45; }
+
+/* ---------- loader error (shown when opened via file://) ---------- */
+.deck-error {
+  position: fixed; inset: 40px; padding: 32px; font: 20px/1.5 var(--font-mono);
+  background: var(--accent-3-wash); color: var(--ink); border: 2px solid var(--accent-3);
+}
+
+/* ---------- reveal.js chrome ---------- */
+.reveal-viewport { background: var(--ground); }
+.reveal .slide-number a { text-decoration: none; color: inherit; }
+.reveal .progress { color: var(--accent-1); height: 4px; }
+.reveal section.layout-chapter .chapter .num.wine { color: var(--accent-2); }
+
+/* ---------- small inline version / status tag, e.g. <span class="pill">v3</span> ---------- */
+.reveal .pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent-1);
+  background: var(--accent-1-wash);
+  padding: 2px 7px;
+  border-radius: 3px;
+  vertical-align: 0.15em;
+}
+
+/* ---------- PDF export (?print-pdf): give every page the full canvas so the frame keeps its grid ---------- */
+html.reveal-print .reveal .slides .pdf-page > section {
+  height: 720px !important;
+  min-height: 720px !important;
+  width: 1280px !important;
+  top: 0 !important;
+}
+html.reveal-print .reveal .slides .pdf-page > section .frame { inset: 0; }
+
+/* layout-full: an optional <p class="footnote"> gets its own row under the body */
+.reveal section.layout-full .frame {
+  grid-template-rows: var(--title-row) 1fr auto var(--footer-row);
+  grid-template-areas: "title" "body" "note" "footer";
+}
+.reveal section.layout-full .frame > .footnote { grid-area: note; margin: 12px 0 6px; }

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iceberg Meets Pinot</title>
+  <link rel="stylesheet" href="template/vendor/reveal/reset.css">
+  <link rel="stylesheet" href="template/vendor/reveal/reveal.css">
+  <link rel="stylesheet" href="template/theme.css">
+</head>
+<body>
+  <div class="reveal"><div class="slides"></div></div>
+  <script src="template/vendor/reveal/reveal.js"></script>
+  <script src="template/vendor/reveal/plugin/notes/notes.js"></script>
+  <script>
+    // Chapter order and footer labels. Target times are for the 50-minute conference slot.
+    window.DECK = {
+      chapters: [
+        { file: "chapters/00-opening.html",  label: "Opening" },           // 1 min
+        { file: "chapters/01-two-lines.html", label: "Two lines" },        // 3 min
+        { file: "chapters/02-iceberg.html",  label: "Iceberg" },           // 15 min
+        { file: "chapters/03-pinot.html",    label: "Pinot" },             // 11 min
+        { file: "chapters/04-together.html", label: "Iceberg ♥ Pinot" },   // 18 min
+        { file: "chapters/05-closing.html",  label: "Closing" },           // 1 min + Q&A
+      ],
+    };
+  </script>
+  <script src="template/loader.js"></script>
+</body>
+</html>

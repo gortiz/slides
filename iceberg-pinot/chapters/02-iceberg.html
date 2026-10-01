@@ -1,0 +1,219 @@
+<section class="layout-chapter">
+  <div class="chapter">
+    <span class="num">CHAPTER 1</span>
+    <span class="name">Iceberg</span>
+    <span class="tagline">A table format, built bottom-up</span>
+  </div>
+</section>
+
+<section class="layout-split">
+  <h2>Warehouse, lake, lakehouse</h2>
+  <ul class="points">
+    <li><strong>Warehouse:</strong> ETL into closed storage</li>
+    <li class="fragment"><strong>Lake:</strong> cheap files, schema on read</li>
+    <li class="fragment"><strong>Hive:</strong> a table is a directory</li>
+    <li class="fragment"><strong>Lakehouse:</strong> open files, real tables</li>
+  </ul>
+  <figure class="diagram todo">three eras left to right; Hive era shows a directory tree with partitions as folders</figure>
+  <aside class="notes">
+    Keep this to two minutes. The transition that matters is Hive to Iceberg. Hive's four failures:
+    listing is the planner, no atomic commits, users must know the partitioning, schema by position.
+    Iceberg fixes each one.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>A format, not an engine</h2>
+  <ul class="points">
+    <li>No Iceberg server</li>
+    <li>A spec plus libraries</li>
+    <li>Every engine embeds them</li>
+    <li class="fragment">Many writers, many readers</li>
+  </ul>
+  <figure class="diagram todo">Spark, Flink, Trino, Pinot each holding an "Iceberg lib" box, all pointing at the same S3 bucket and one catalog</figure>
+  <aside class="notes">
+    This is the mental model for everything that follows. Iceberg needs engines to be useful.
+    Pinot is one of them. Contrast to remember for chapter 2: Pinot is servers, Iceberg is files.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Parquet 101</h2>
+  <ul class="points">
+    <li><strong>Row group:</strong> horizontal slice</li>
+    <li class="fragment"><strong>Column chunk:</strong> one column, contiguous</li>
+    <li class="fragment"><strong>Page:</strong> smallest readable unit</li>
+    <li class="fragment"><strong>Footer:</strong> offsets, stats, schema</li>
+    <li class="fragment">No page offsets in the footer</li>
+  </ul>
+  <figure class="diagram todo">file → row groups → column chunks → pages, footer at the end (like the field guide figure)</figure>
+  <aside class="notes">
+    The last bullet sets up chapter 3: to find one page you must walk the page headers in the chunk,
+    unless the writer added the optional page index. Writers disagree on that, so you cannot rely on it.
+  </aside>
+</section>
+
+<section class="layout-full">
+  <h2>Building a table, bottom-up</h2>
+  <figure class="diagram todo">
+    Animation in five steps:<br>
+    1 data files · 2 manifests with column stats · 3 manifest list with partition summaries ·
+    4 metadata.json with schemas, specs, snapshots · 5 catalog pointer
+  </figure>
+  <aside class="notes">
+    Start from what people know: Parquet files. Each layer answers a question about the layer below.
+    Manifests: which files, and their min/max per column. Manifest list: which manifests, with partition
+    ranges. metadata.json: schemas by field ID, partition specs, the snapshot list. The catalog holds one
+    pointer, and it is the only mutable thing.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>A commit</h2>
+  <ol class="points">
+    <li>Write new data files</li>
+    <li class="fragment">Write new manifests</li>
+    <li class="fragment">Write new metadata.json</li>
+    <li class="fragment">Swap the catalog pointer</li>
+    <li class="fragment">Lost the race? Retry</li>
+  </ol>
+  <figure class="diagram todo">the tree from the previous slide; new nodes appear in sync with each step, then the pointer moves</figure>
+  <aside class="notes">
+    Optimistic concurrency: no locks, no coordinator. Readers that started earlier keep reading the old
+    tree. Old manifests are shared between snapshots, so a commit writes only what changed.
+  </aside>
+</section>
+
+<section class="layout-statement">
+  <p>Iceberg is a B-tree of files where only the root pointer is mutable.</p>
+  <aside class="notes">Pause here. Engineers who know databases get the whole format from this sentence.</aside>
+</section>
+
+<section class="layout-split">
+  <h2>Time travel</h2>
+  <ul class="points">
+    <li>Old trees stay reachable</li>
+    <li><code>FOR VERSION AS OF</code></li>
+    <li>Branches and tags</li>
+    <li class="fragment">Until snapshots expire</li>
+  </ul>
+  <figure class="diagram todo">two snapshot pointers into the same tree, sharing most nodes</figure>
+  <aside class="notes">Thirty seconds. It falls out of the tree for free; maintenance (expire snapshots) bounds it.</aside>
+</section>
+
+<section class="layout-split">
+  <h2>Hidden partitioning</h2>
+  <ul class="points">
+    <li>Partition by a transform</li>
+    <li><code>day(ts)</code>, <code>bucket(16, user_id)</code></li>
+    <li>Users filter on <code>ts</code></li>
+    <li class="fragment">Change the spec, keep old files</li>
+  </ul>
+  <figure class="diagram todo">query on ts → planner maps to day partitions; old files tagged spec 1 (day), new files spec 2 (hour)</figure>
+  <aside class="notes">Compare with Hive: there the user had to know and filter on the dt folder.</aside>
+</section>
+
+<section class="layout-split even">
+  <h2>Deletes: who pays?</h2>
+  <ul class="points">
+    <li><strong>Copy-on-write:</strong> writer rewrites files</li>
+    <li class="fragment"><strong>Merge-on-read:</strong> writer adds a delete file</li>
+    <li class="fragment">Reader merges at scan time</li>
+    <li class="fragment">Compaction folds them back</li>
+  </ul>
+  <figure class="diagram todo">left: file rewritten without the row. right: original file + small delete file, merged by the reader</figure>
+  <aside class="notes">
+    Both strategies exist in every version that supports deletes. The table's format-version caps what
+    writers may produce; the engine chooses per operation (Spark: write.delete.mode and friends).
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Merge-on-read, three ways</h2>
+  <div class="left-stack">
+  <ul class="points">
+    <li><strong>Position deletes</strong> <span class="pill">v2</span>: file + row</li>
+    <li class="fragment"><strong>Equality deletes</strong> <span class="pill">v2</span>: "where id = 42"</li>
+    <li class="fragment"><strong>Deletion vectors</strong> <span class="pill">v3</span>: one bitmap per file</li>
+  </ul>
+    <p class="footnote">Puffin: a blob file format from the Iceberg spec. It stores DVs and statistics.</p>
+  </div>
+  <figure class="diagram todo">three small cards; the DV card shows a roaring bitmap stored inside a Puffin file</figure>
+  
+  <aside class="notes">
+    Equality deletes are cheap for streaming writers such as Flink and expensive for every reader.
+    DVs are the cheapest to apply: one bitmap AND. Formats can mix inside one table, for example a v2
+    table upgraded to v3 with old position-delete files still around.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>How a scan engine prunes</h2>
+  <ul class="points">
+    <li>Manifest list: partitions</li>
+    <li class="fragment">Manifests: file min/max</li>
+    <li class="fragment">Footer: row group stats</li>
+    <li class="fragment">Page index: page min/max</li>
+  </ul>
+  <figure class="diagram todo">funnel narrowing step by step, with a byte counter in the corner for WHERE user_id = 42</figure>
+  <aside class="notes">
+    Introduce the byte counter here. It stays in the corner for the rest of the talk and shows requests
+    and bytes for the same query under each approach.
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Where min/max gives up</h2>
+  <ul class="points">
+    <li>Table sorted by <code>ts</code></li>
+    <li>Filter on <code>user_id</code></li>
+    <li class="fragment">Every range contains it</li>
+    <li class="fragment">Nothing prunes: full scan</li>
+  </ul>
+  <figure class="diagram todo">many files, each min/max bar covering the searched user_id; byte counter jumps to "everything"</figure>
+  <aside class="notes">
+    Min/max answers "which files might contain it". On unclustered columns the answer is "all of them".
+    You need something that answers "which rows".
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Even Spotify adds an index</h2>
+  <div class="left-stack">
+  <ul class="points">
+    <li>Point queries on the lake</li>
+    <li>External index: key → file, rows</li>
+    <li>Ranged reads, only needed bytes</li>
+    <li class="fragment">The lake wants indexes</li>
+  </ul>
+    <p class="footnote">engineering.atspotify.com · "Indexing the data lake for online point queries" (2026)</p>
+  </div>
+  <figure class="diagram todo">key → (file, rows) → parallel ranged GETs into Parquet</figure>
+  
+  <aside class="notes">
+    Spotify built Random Access Parquet: an external index over Parquet in GCS, cached metadata to turn
+    rows into page locations, and parallel ranged reads. Independent validation of the idea in chapter 3,
+    from a team with no stake in Pinot. Note it works on Parquet, without Iceberg.
+  </aside>
+</section>
+
+<section class="layout-full">
+  <h2>How engines read Iceberg</h2>
+  <table class="grid">
+    <thead><tr><th>Engine</th><th>Local copy</th><th>Remote scan + cache</th><th>?</th></tr></thead>
+    <tbody>
+      <tr><td>Trino / Athena</td><td class="no">—</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>Spark</td><td class="no">—</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>DuckDB</td><td class="yes">✓</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>Dremio</td><td class="yes">✓ reflections</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>Snowflake</td><td class="yes">✓</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>BigQuery</td><td class="yes">✓</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>StarRocks / Doris</td><td class="yes">✓</td><td class="yes">✓</td><td></td></tr>
+      <tr><td>ClickHouse</td><td class="yes">✓</td><td class="yes">✓</td><td></td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">
+    DRAFT, NOT VERIFIED. Every cell needs a source before the talk. The third column stays empty here on
+    purpose: chapter 3 fills it in. Two modes everyone knows: copy the data, or scan it remotely.
+  </aside>
+</section>

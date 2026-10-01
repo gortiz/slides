@@ -1,0 +1,39 @@
+<section class="layout-cover">
+  <div class="cover">
+    <h1>Your Iceberg Table Is Already a Pinot Table</h1>
+    <p class="deck">A Netflix format, a LinkedIn engine, and why they fit</p>
+    <p class="who">Gonzalo Ortiz · Apache Pinot PMC · StarTree</p>
+  </div>
+  <aside class="notes">Introduce yourself in one sentence. Do not explain the title yet.</aside>
+</section>
+
+<section class="layout-split">
+  <h2>Quick show of hands</h2>
+  <ul class="points">
+    <li>Written a Parquet file?</li>
+    <li class="fragment">Know what is in its footer?</li>
+    <li class="fragment">Used Iceberg in production?</li>
+    <li class="fragment">Heard of Apache Pinot?</li>
+  </ul>
+  <figure class="diagram todo">hand-drawn raised hands, one per question</figure>
+  <aside class="notes">
+    Calibrate depth from the answers. If most hands stay up for the footer question, go faster
+    through Parquet 101. Expect almost no hands for Pinot; say "that is fine, nobody needs to".
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Our table for today</h2>
+  <ul class="points">
+    <li><code>plays</code>: one row per song played</li>
+    <li>Billions of rows per day</li>
+    <li>Written by Spark, every hour</li>
+    <li class="fragment">Question: <em>"your week in music"</em> for every user</li>
+  </ul>
+  <figure class="diagram todo">table card: plays(user_id, track_id, country, ts, ms_played) with a few sample rows</figure>
+  <aside class="notes">
+    This table follows us through the whole talk. Chapter 1 stores it, chapter 2 serves it,
+    chapter 3 does both without a copy. The last bullet is the product requirement that makes it
+    hard: every user opens the app and expects their own numbers in milliseconds.
+  </aside>
+</section>
