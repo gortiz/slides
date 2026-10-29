@@ -1,4 +1,5 @@
-<section class="layout-chapter">
+<section class="layout-chapter night">
+  <img class="art" src="assets/startree/iceberg-startree-art.png" alt="">
   <div class="chapter">
     <span class="num">CHAPTER 3</span>
     <span class="name">Iceberg ♥ Pinot</span>
@@ -6,255 +7,502 @@
   </div>
 </section>
 
-<section class="layout-full">
-  <h2>Same shape</h2>
-  <table class="grid">
-    <thead><tr><th>Iceberg</th><th>Pinot</th></tr></thead>
-    <tbody>
-      <tr><td>Data file, immutable</td><td>Segment, immutable</td></tr>
-      <tr class="fragment"><td>Manifest stats</td><td>Broker pruning metadata</td></tr>
-      <tr class="fragment"><td>Snapshot</td><td>A routable segment set</td></tr>
-      <tr class="fragment"><td>Partition spec</td><td>Segment partitioning</td></tr>
-      <tr class="fragment"><td>Deletion vector</td><td>Valid-doc bitmap (upserts)</td></tr>
-      <tr class="fragment"><td>Snapshot expiry</td><td>Retention</td></tr>
-    </tbody>
-  </table>
-  <aside class="notes">
-    Close the cold open: this is why the two unlabeled diagrams looked the same. Then say where the
-    mapping breaks: Iceberg files carry no indexes, and the writer decides their size, not Pinot.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>One file, one segment</h2>
+<section class="layout-split" data-badge="startree">
+  <h2>One Parquet file, one Pinot segment</h2>
   <ul class="points">
     <li>Name = hash of the file path</li>
     <li>Paths never change content</li>
-    <li class="fragment">Segment holds no data</li>
-    <li class="fragment">Its forward index is the Parquet file</li>
+    <li class="fragment" data-fragment-index="1">Segment holds no data</li>
+    <li class="fragment" data-fragment-index="2">Its forward index is the Parquet file</li>
   </ul>
-  <figure class="diagram todo">Parquet file in the Iceberg bucket; a thin Pinot segment (metadata + indexes) pointing at it</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="One Iceberg data file becomes one Pinot segment named by a hash of its path; the segment holds metadata and indexes, and its forward index points at the Parquet file">
+<rect x="0" y="20" width="300" height="120" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="14" y="42">ICEBERG BUCKET</text>
+<rect x="14" y="60" width="272" height="64" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="150.0" y="81.0">data-0042.parquet</text>
+<text class="small center" x="150.0" y="105.0">immutable</text>
+<line class="arrow" x1="302" y1="92" x2="380" y2="92" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small center" x="341" y="72">hash(path)</text>
+<rect x="384" y="62" width="246" height="60" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="small wine center" x="507.0" y="92.0">segment 8f3a…c21</text>
+<g class="fragment " data-fragment-index="1">
+<rect x="384" y="170" width="246" height="220" data-tone="wine" data-fill="none" data-stroke-width="1.6" />
+<text class="title wine" x="398" y="192">INSIDE THE SEGMENT</text>
+<rect x="398" y="210" width="218" height="40" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="507.0" y="230.0">metadata</text>
+<rect x="398" y="260" width="218" height="40" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="507.0" y="280.0">indexes</text>
+<rect x="398" y="310" width="218" height="40" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="small wine center" x="507.0" y="330.0">forward index →</text>
+<path class="arrow" d="M 396 330 C 300 330 220 240 160 128" data-tone="wine" data-stroke-width="1.6"/>
+</g>
+<g class="fragment " data-fragment-index="2">
+<text class=" center" x="500" y="430">no data inside</text>
+<text class="small wine center" x="500" y="462">the forward index is the file</text>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    murmur3_128(dataFilePath). Sound only because Iceberg never rewrites a committed file. The segment is
-    metadata, indexes, and a pointer to the Parquet file. It lives on the table's S3 tier like any
-    tiered-storage segment.
+    <ul>
+      <li>Segment name = murmur3_128(file path)</li>
+      <li>Safe because Iceberg never rewrites a committed file</li>
+      <li>Segment = metadata + indexes + pointer to the Parquet file, on the S3 tier</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
+<section class="layout-split" data-badge="startree" data-visibility="hidden">
   <h2>From catalog to query</h2>
   <ol class="points">
-    <li>Controller reads the snapshot</li>
-    <li class="fragment">New file: footer only, tiny segment</li>
-    <li class="fragment">Server builds indexes, stores them on S3</li>
-    <li class="fragment">Snapshot published</li>
-    <li class="fragment">Broker pins it per query</li>
+    <li class="fragment" data-fragment-index="1">Controller reads the snapshot</li>
+    <li class="fragment" data-fragment-index="2">New file: footer only, tiny segment</li>
+    <li class="fragment" data-fragment-index="3">Server builds indexes, stores them on S3</li>
+    <li class="fragment" data-fragment-index="4">Snapshot published</li>
+    <li class="fragment" data-fragment-index="5">Broker pins it per query</li>
   </ol>
-  <figure class="diagram todo">message animation across catalog, controller, deep store, server, broker, S3; each step lights its arrow</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="External Table flow: controller reads the snapshot and footers and writes tiny segments; the server builds indexes and stores them on Pinot's S3 tier; the broker pins the published snapshot">
+<rect x="10" y="10" width="170" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="95.0" y="40.0">Iceberg catalog</text>
+<rect x="235" y="10" width="170" height="60" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="title center" x="320.0" y="40.0">Controller</text>
+<rect x="460" y="10" width="170" height="60" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="title wine center" x="545.0" y="40.0">Broker</text>
+<rect x="10" y="330" width="170" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="95.0" y="349.0">Iceberg bucket</text>
+<text class="small center" x="95.0" y="373.0">Parquet</text>
+<rect x="235" y="330" width="170" height="60" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="title muted center" x="320.0" y="349.0">Pinot S3 tier</text>
+<text class="small center" x="320.0" y="373.0">Pinot's own files</text>
+<rect x="460" y="330" width="170" height="60" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="title wine center" x="545.0" y="360.0">Server</text>
+<g class="fragment " data-fragment-index="1">
+<line class="arrow" x1="180" y1="40" x2="231" y2="40" data-tone="ice" data-stroke-width="1.8" data-head="12"/>
+<text class="small ice center" x="207" y="92">snapshot</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<line class="arrow" x1="150" y1="328" x2="262" y2="74" data-tone="ice" data-stroke-width="1.5" data-head="12"/>
+<text class="small ice" x="176" y="230" style="text-anchor: end">footers only</text>
+<line class="arrow" x1="290" y1="72" x2="290" y2="326" data-tone="muted" data-stroke-width="1.8" data-head="12"/>
+<text class="small" x="284" y="140" style="text-anchor: end">tiny segment</text>
+</g>
+<g class="fragment " data-fragment-index="3">
+<line class="arrow" x1="407" y1="350" x2="456" y2="350" data-tone="muted" data-stroke-width="1.6" data-head="12"/>
+<text class="small center" x="432" y="318">segment</text>
+<line class="arrow" x1="458" y1="376" x2="409" y2="376" data-tone="wine" data-stroke-width="1.8" data-head="12"/>
+<text class="small wine center" x="432" y="412">indexes</text>
+<path class="arrow" d="M 95 392 C 95 505 545 505 545 394" data-tone="ice" data-stroke-width="1.6"/>
+<text class="small ice center" x="320" y="492">column pages, read once</text>
+</g>
+<g class="fragment " data-fragment-index="4">
+<line class="arrow" x1="350" y1="72" x2="350" y2="326" data-tone="wine" data-stroke-width="1.5" data-head="12"/>
+<text class="small wine" x="358" y="250">final.parquet</text>
+</g>
+<g class="fragment " data-fragment-index="5">
+<line class="arrow" x1="395" y1="328" x2="500" y2="74" data-tone="wine" data-stroke-width="1.8" data-head="12"/>
+<text class="small wine" x="470" y="200">pin S</text>
+<line class="arrow" x1="600" y1="72" x2="600" y2="326" data-tone="wine" data-stroke-width="2" data-head="12"/>
+<text class="small wine" x="608" y="130">query</text>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    The controller never reads data, only footers. The server builds every index at load by reading the
-    indexed columns once, then uploads the segment (metadata + indexes, no data) to the table's S3 tier.
-    Later loads reuse it while segment and index config are unchanged. Say the price: one read per indexed
-    column per segment, and index storage (270 GB on 770 GB in the published benchmark).
+    <ul>
+      <li>Controller reads only footers</li>
+      <li>Server builds the indexes once and uploads them (no data) to the S3 tier</li>
+      <li>Broker pins one snapshot</li>
+      <li>Cost: one read per indexed column; 270 GB of indexes on 770 GB of data</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
-  <h2>Reading without a copy</h2>
-  <ul class="points">
-    <li>Indexes give exact doc IDs</li>
-    <li class="fragment">Page index gives byte ranges</li>
-    <li class="fragment">Ranged GETs, only those pages</li>
-    <li class="fragment">512 MB file, 0.5 MB read</li>
-  </ul>
-  <figure class="diagram todo">redraw of the published page-fetch figure: row groups, chunks, pages with ticks and crosses; byte counter shows 0.5 MB</figure>
-  <aside class="notes">
-    The persisted page index is about 32 to 36 bytes per page, memory-mapped, and embeds the footer.
-    Built once per segment because writers do not reliably write Parquet's own page index.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>Where the rows go</h2>
-  <ul class="points">
-    <li>12.2 billion rows</li>
-    <li class="fragment">Segment pruning: 3.9 billion</li>
-    <li class="fragment">Indexes: 80 million</li>
-    <li class="fragment">99.3% never read</li>
-  </ul>
-  <figure class="diagram todo">the chapter 1 funnel again, now with real numbers, ending far below where min/max stopped</figure>
-  <aside class="notes">
-    Q2 of the published StarTree benchmark (770 GB of Parquet on S3). Segment pruning plays the role of Iceberg's
-    manifest pruning; the indexes do what min/max cannot. For the map-column query the funnel ends at 25 rows.
-  </aside>
-</section>
-
-<section class="layout-full">
+<section class="layout-full" data-badge="startree">
   <h2>Same Parquet, same hardware</h2>
-  <table class="grid">
-    <thead><tr><th>Cold, ms</th><th>StarTree</th><th>Trino</th><th>ClickHouse</th></tr></thead>
-    <tbody>
-      <tr><td>Filtered count</td><td class="yes">491</td><td>10,237</td><td>19,200</td></tr>
-      <tr><td>Selective aggregation</td><td class="yes">515</td><td>4,886</td><td>6,634</td></tr>
-      <tr><td>Time-bucketed aggregation</td><td class="yes">645</td><td>5,486</td><td>7,451</td></tr>
-      <tr><td>Map-column aggregation</td><td class="yes">2,390</td><td>9,219</td><td>26,973</td></tr>
-      <tr class="fragment"><td>Network in, GB</td><td class="yes">4.2</td><td>19.3</td><td>20.5</td></tr>
-    </tbody>
-  </table>
+  <figure class="diagram">
+    <svg class="sketch" viewBox="0 0 1136 470" role="img" aria-label="Query latency with no data cache, in milliseconds. ClickHouse 6,634 to 26,973; Trino 4,886 to 10,237; StarTree 491 to 2,390; StarTree with pinned local indexes 287 to 615. Network in: StarTree 4.2 GB, Trino 19.3 GB, ClickHouse 20.5 GB.">
+      <text class="title muted" x="0" y="22">LATENCY, MS · NO DATA CACHE · LOWER IS BETTER</text>
+      <line x1="330" y1="56" x2="330" y2="462" data-tone="muted" data-stroke-width="1.2" data-roughness="0.5"/>
+      <text class="small" x="0" y="107">Filtered count</text>
+      <rect x="330" y="64" width="320" height="16" data-color="#7D8E93" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="658" y="76">19,200 · ClickHouse</text>
+      <g class="fragment" data-fragment-index="1">
+      <rect x="330" y="85" width="171" height="16" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="509" y="97">10,237 · Trino</text>
+      </g>
+      <g class="fragment" data-fragment-index="2">
+      <rect x="330" y="106" width="8" height="16" data-tone="ice" data-fill="none" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="346" y="118">491 · StarTree, no pinning</text>
+      </g>
+      <g class="fragment" data-fragment-index="3">
+      <rect x="330" y="127" width="5" height="16" data-tone="ice" data-fill="solid" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="343" y="139">287 · StarTree, pinned indexes</text>
+      </g>
+      <text class="small" x="0" y="207">Selective aggregation</text>
+      <rect x="330" y="164" width="111" height="16" data-color="#7D8E93" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="449" y="176">6,634</text>
+      <g class="fragment" data-fragment-index="1">
+      <rect x="330" y="185" width="82" height="16" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="420" y="197">4,886</text>
+      </g>
+      <g class="fragment" data-fragment-index="2">
+      <rect x="330" y="206" width="9" height="16" data-tone="ice" data-fill="none" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="347" y="218">515</text>
+      </g>
+      <g class="fragment" data-fragment-index="3">
+      <rect x="330" y="227" width="8" height="16" data-tone="ice" data-fill="solid" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="346" y="239">483</text>
+      </g>
+      <text class="small" x="0" y="307">Time-bucketed</text>
+      <rect x="330" y="264" width="124" height="16" data-color="#7D8E93" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="462" y="276">7,451</text>
+      <g class="fragment" data-fragment-index="1">
+      <rect x="330" y="285" width="92" height="16" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="430" y="297">5,486</text>
+      </g>
+      <g class="fragment" data-fragment-index="2">
+      <rect x="330" y="306" width="11" height="16" data-tone="ice" data-fill="none" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="349" y="318">645</text>
+      </g>
+      <g class="fragment" data-fragment-index="3">
+      <rect x="330" y="327" width="10" height="16" data-tone="ice" data-fill="solid" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="348" y="339">615</text>
+      </g>
+      <text class="small" x="0" y="407">Map-column aggregation</text>
+      <rect x="330" y="364" width="450" height="16" data-color="#7D8E93" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="788" y="376">26,973</text>
+      <g class="fragment" data-fragment-index="1">
+      <rect x="330" y="385" width="154" height="16" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small" x="492" y="397">9,219</text>
+      </g>
+      <g class="fragment" data-fragment-index="2">
+      <rect x="330" y="406" width="40" height="16" data-tone="ice" data-fill="none" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="378" y="418">2,390</text>
+      </g>
+      <g class="fragment" data-fragment-index="3">
+      <rect x="330" y="427" width="6" height="16" data-tone="ice" data-fill="solid" data-stroke-width="1.4" data-roughness="0.8"/>
+      <text class="small ice" x="344" y="439">382</text>
+      </g>
+      <g class="fragment" data-fragment-index="4">
+        <text class="title muted" x="900" y="22">NETWORK IN</text>
+        <text x="900" y="88" style="font-family: var(--font-title); font-size: 60px; font-weight: 700; fill: var(--accent-1)">4.2 GB</text>
+        <text class="small" x="902" y="128">StarTree</text>
+        <text x="900" y="198" style="font-family: var(--font-title); font-size: 60px; font-weight: 700; fill: #7D8E93">~20 GB</text>
+        <text class="small" x="902" y="238">Trino · ClickHouse</text>
+      </g>
+    </svg>
+  </figure>
   <p class="footnote">StarTree benchmark: 12.2 B rows, 770 GB Parquet on S3, 4 × r6gd.4xlarge for every engine. Trino 476 (Iceberg connector), ClickHouse 26.2 (icebergS3Cluster). Indexes add 270 GB.</p>
+  <a class="qr at-right" href="https://startree.ai/resources/iceberg-query-benchmark-vs-trino-vs-clickhouse/" data-logo="startree" data-label="startree.ai · vs Trino, ClickHouse"></a>
   <aside class="notes">
-    Our own benchmark, so say so, and give the methodology: same data, same hardware, every engine reads the same
-    Parquet; ClickHouse native MergeTree excluded because it is a copy. Lead with network in: 4.2 GB versus about
-    20 GB is the physics argument in one number. Mention the cost honestly: 270 GB of indexes on 770 GB of data.
+    <ul>
+      <li>Our benchmark: same Parquet, same 4 × r6gd.4xlarge for every engine</li>
+      <li>Cold, StarTree vs Trino: 21x, 9.5x, 8.5x, 3.9x faster</li>
+      <li>Pinned is not a cache: indexes always local, data still from S3</li>
+      <li>Network in: 4.2 GB vs ~20 GB</li>
+      <li>Method: 5–10 warm-up queries, 100 sequential runs</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
-  <h2>Two questions decide everything</h2>
+<section class="layout-full" data-badge="startree">
+  <h2>Filtering with an index</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 -28 1136 498" role="img" aria-label="The same query on an External Table: the server keeps the Parquet footer, the page index and the pinned user indexes on local disk; the inverted index gives three doc IDs, the page index maps them to pages 3, 4 and 10 of the amount column chunk, and three ranged GETs fetch those pages whole: 0.5 MB of a 512 MB file, against about 24 KB for a tiered Pinot segment.">
+<text class="small muted" x="0" y="-6">SELECT SUM(amount) FROM plays</text>
+<text class="small muted" x="0" y="18">WHERE user = 'bob'</text>
+<rect x="0" y="40" width="520" height="150" data-tone="wine" data-fill="none" data-stroke-width="1.8"/>
+<text class="title wine" x="16" y="62">SERVER · LOCAL DISK</text>
+<rect x="16" y="76" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="104">footer + page index (docs → bytes)</text>
+<rect x="16" y="130" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="158">pinned: user dictionary + inverted</text>
+<rect x="0" y="214" width="740" height="252" data-tone="muted" data-fill="none" data-stroke-width="1.6"/>
+<text class="title muted" x="16" y="238">S3 · data-0042.parquet · NOT OURS</text>
+<text class="small center" x="125" y="272">user</text>
+<text class="small center" x="235" y="272">ts</text>
+<text class="small center" x="509" y="272">amount · compressed pages</text>
+<text class="small muted" x="16" y="318">RG 1</text>
+<rect x="70" y="284" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="125" y="318">chunk</text>
+<rect x="180" y="284" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="235" y="318">chunk</text>
+<text class="small muted" x="16" y="386">RG 2</text>
+<rect x="70" y="352" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="125" y="386">chunk</text>
+<rect x="180" y="352" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="235" y="386">chunk</text>
+<rect x="290" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="326.5" y="318">p1</text>
+<rect x="363" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="399.5" y="318">p2</text>
+<rect x="436" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="472.5" y="318">p3</text>
+<rect x="509" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="545.5" y="318">p4</text>
+<rect x="582" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="618.5" y="318">p5</text>
+<rect x="655" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="691.5" y="318">p6</text>
+<rect x="290" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="326.5" y="386">p7</text>
+<rect x="363" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="399.5" y="386">p8</text>
+<rect x="436" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="472.5" y="386">p9</text>
+<rect x="509" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="545.5" y="386">p10</text>
+<rect x="582" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="618.5" y="386">p11</text>
+<rect x="655" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="691.5" y="386">p12</text>
+<rect x="70" y="420" width="658" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="399" y="442">footer · cached locally</text>
+<g class="fragment" data-fragment-index="1"><rect x="16" y="76" width="488" height="44" data-tone="amber" data-fill="wash" data-stroke-width="2"/>
+<text class="small center" x="260" y="104">footer + page index (docs → bytes)</text><rect x="70" y="420" width="658" height="32" data-tone="amber" data-fill="wash" data-stroke-width="2"/>
+<text class="small center" x="399" y="442">footer · cached locally</text></g>
+<g class="fragment" data-fragment-index="2"><rect x="16" y="130" width="488" height="44" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="260" y="158">pinned: user dictionary + inverted</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="760" y="176" width="350" height="96" data-tone="ink" data-fill="wash" data-stroke-width="1.6"/>
+<text class="title" x="774" y="200">PAGE INDEX</text>
+<text class="small" x="774" y="228">docs 20,000–20,999 → p3, p4</text>
+<text class="small" x="774" y="256">docs 61,000–61,999 → p10</text></g>
+<g class="fragment" data-fragment-index="4"><rect x="436" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="472.5" y="318">p3</text><rect x="509" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="545.5" y="318">p4</text><rect x="509" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="545.5" y="386">p10</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="446" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="565" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="521" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/></g>
+<text class="title muted" x="760" y="20">BYTES FROM S3</text>
+<g><g class="fragment fade-out" data-fragment-index="4"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: #7D8E93">0</text></g></g>
+<g class="fragment" data-fragment-index="4"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: var(--accent-1)">0.5 MB</text></g>
+<g><g class="fragment fade-out" data-fragment-index="4"><text class="small muted" x="762" y="108">of a 512 MB file</text></g></g>
+<g class="fragment" data-fragment-index="4"><text class="small muted" x="762" y="108">of 512 MB · <tspan class="emph">tiered segment: ~24 KB</tspan></text></g>
+<g class="fragment" data-fragment-index="1"><g class="fragment fade-out" data-fragment-index="2"><text class="small" x="760" y="150">Footer + page index: local</text></g></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><text class="small" x="760" y="150">Pinned indexes: 'bob' → 3 doc IDs</text></g></g>
+<g class="fragment" data-fragment-index="3"><g class="fragment fade-out" data-fragment-index="4"><text class="small" x="760" y="150">Page index: doc IDs → pages</text></g></g>
+<g class="fragment" data-fragment-index="4"><text class="small" x="760" y="150">3 ranged GETs, whole pages</text></g>
+</svg>
+</figure>
+  <a class="qr at-right" href="https://startree.ai/solutions/pinot-with-iceberg/" data-logo="startree" data-label="startree.ai"></a>
+  <aside class="notes">
+    <ul>
+      <li>Same picture as tiered storage: only the file changes</li>
+      <li>Indexes give exact doc IDs; the page index gives byte ranges</li>
+      <li>Pinot's page index: ~32–36 B per page, built once</li>
+      <li>A Parquet page is compressed as a unit: read it whole (~170 KB each)</li>
+      <li>3 ranged GETs: 0.5 MB of 512 MB; tiered segment ~24 KB (1,000-doc chunks)</li>
+      <li>Illustrative numbers</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-split" data-badge="startree">
+  <div class="left-stack">
+    <p style="font-family: var(--font-title); font-weight: 700; font-size: 52px; line-height: 1.1; letter-spacing: -0.02em; margin: 0">Inverted indexes don't help aggregations</p>
+  </div>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Aggregation latencies from the Trino and ClickHouse benchmark, in milliseconds. Selective aggregation: ClickHouse 6,634, Trino 4,886, StarTree 515, StarTree with pinned indexes 483. Time-bucketed: 7,451, 5,486, 645, 615. Pinning the indexes barely changes the aggregations">
+<text class="small muted" x="0" y="20">ClickHouse · Trino · StarTree · StarTree, pinned indexes</text>
+<line x1="210" y1="56" x2="210" y2="500" data-tone="muted" data-stroke-width="1.2" data-roughness="0.5"/>
+<text class="small" x="0" y="132">Selective aggregation</text>
+<rect x="210" y="70" width="294" height="22" data-color="#7D8E93" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small" x="514" y="87">6,634</text>
+<rect x="210" y="102" width="216" height="22" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small" x="436" y="119">4,886</text>
+<rect x="210" y="134" width="23" height="22" data-tone="ice" data-fill="none" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small ice" x="243" y="151">515</text>
+<rect x="210" y="166" width="21" height="22" data-tone="ice" data-fill="solid" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small ice" x="241" y="183">483</text>
+<g><ellipse cx="250" cy="161" rx="78" ry="36" data-tone="wine" data-stroke-width="2" data-roughness="1.6"/></g>
+<text class="small" x="0" y="342">Time-bucketed</text>
+<rect x="210" y="280" width="330" height="22" data-color="#7D8E93" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small" x="550" y="297">7,451</text>
+<rect x="210" y="312" width="243" height="22" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small" x="463" y="329">5,486</text>
+<rect x="210" y="344" width="29" height="22" data-tone="ice" data-fill="none" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small ice" x="249" y="361">645</text>
+<rect x="210" y="376" width="27" height="22" data-tone="ice" data-fill="solid" data-stroke-width="1.4" data-roughness="0.8"/>
+<text class="small ice" x="247" y="393">615</text>
+<g><ellipse cx="250" cy="371" rx="78" ry="36" data-tone="wine" data-stroke-width="2" data-roughness="1.6"/></g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Aggregations read ~80 M rows each</li>
+      <li>Pinning: 515 → 483 ms, 645 → 615 ms</li>
+      <li>Only 30 and 7 QPS, server CPU bound</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-badge="startree">
+  <h2>Star-tree index</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 -28 1136 498" role="img" aria-label="SUM(amount) WHERE country = 'ES' on an External Table. With the inverted index, 300 thousand matching rows are spread over every page, so the engine reads all twelve pages of amount: about 10 MB per file, 200 GB and 6 billion rows over the 20 thousand files of a 10 TB table. With a star-tree index split by country and user, pinned locally, the engine follows root, ES and the star node to one pre-aggregated record: 0 bytes from S3 and one row per segment.">
+<text class="small muted" x="0" y="-6">SELECT SUM(amount) FROM plays</text>
+<text class="small muted" x="0" y="18">WHERE country = 'ES'</text>
+<rect x="0" y="40" width="520" height="150" data-tone="wine" data-fill="none" data-stroke-width="1.8"/>
+<text class="title wine" x="16" y="62">SERVER · LOCAL DISK</text>
+<rect x="16" y="76" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="104">footer + page index</text>
+<rect x="16" y="130" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="158">pinned: country inverted · star-tree</text>
+<rect x="0" y="214" width="740" height="252" data-tone="muted" data-fill="none" data-stroke-width="1.6"/>
+<text class="title muted" x="16" y="238">S3 · data-0042.parquet · NOT OURS</text>
+<text class="small center" x="125" y="272">user</text>
+<text class="small center" x="235" y="272">country</text>
+<text class="small center" x="509" y="272">amount · compressed pages</text>
+<text class="small muted" x="16" y="318">RG 1</text>
+<rect x="70" y="284" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="125" y="318">chunk</text>
+<rect x="180" y="284" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="235" y="318">chunk</text>
+<text class="small muted" x="16" y="386">RG 2</text>
+<rect x="70" y="352" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="125" y="386">chunk</text>
+<rect x="180" y="352" width="110" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="235" y="386">chunk</text>
+<rect x="290" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="326.5" y="318">p1</text>
+<rect x="363" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="399.5" y="318">p2</text>
+<rect x="436" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="472.5" y="318">p3</text>
+<rect x="509" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="545.5" y="318">p4</text>
+<rect x="582" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="618.5" y="318">p5</text>
+<rect x="655" y="284" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="691.5" y="318">p6</text>
+<rect x="290" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="326.5" y="386">p7</text>
+<rect x="363" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="399.5" y="386">p8</text>
+<rect x="436" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="472.5" y="386">p9</text>
+<rect x="509" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="545.5" y="386">p10</text>
+<rect x="582" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="618.5" y="386">p11</text>
+<rect x="655" y="352" width="73" height="56" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="691.5" y="386">p12</text>
+<rect x="70" y="420" width="658" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="399" y="442">footer · cached locally</text>
+<g class="fragment" data-fragment-index="1"><rect x="16" y="130" width="488" height="44" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="260" y="158">pinned: country inverted · star-tree</text></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><rect x="290" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="326.5" y="318">p1</text><rect x="363" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="399.5" y="318">p2</text><rect x="436" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="472.5" y="318">p3</text><rect x="509" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="545.5" y="318">p4</text><rect x="582" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="618.5" y="318">p5</text><rect x="655" y="284" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="691.5" y="318">p6</text><rect x="290" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="326.5" y="386">p7</text><rect x="363" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="399.5" y="386">p8</text><rect x="436" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="472.5" y="386">p9</text><rect x="509" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="545.5" y="386">p10</text><rect x="582" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="618.5" y="386">p11</text><rect x="655" y="352" width="73" height="56" data-tone="wine" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small wine center" x="691.5" y="386">p12</text></g></g>
+<g class="fragment" data-fragment-index="1"><g class="fragment fade-out" data-fragment-index="3"><rect x="298" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="421" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="446" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="569" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="588" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="711" y="284" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="302" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="421" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="444" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="569" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="592" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="709" y="352" width="7" height="56" data-tone="wine" data-fill="solid" data-stroke-width="1"/></g></g>
+<g class="fragment" data-fragment-index="3"><rect x="2" y="216" width="736" height="248" data-rough="off" style="fill: var(--ground); stroke: none; opacity: 0.6"/><text class="title muted" x="760" y="204">STAR-TREE · (country, user)</text>
+<rect x="918" y="222" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="948" y="244">root</text>
+<line x1="948" y1="254" x2="828" y2="290" data-tone="muted" data-stroke-width="1.2"/>
+<line x1="948" y1="254" x2="908" y2="290" data-tone="wine" data-stroke-width="2.4"/>
+<line x1="948" y1="254" x2="988" y2="290" data-tone="muted" data-stroke-width="1.2"/>
+<line x1="948" y1="254" x2="1068" y2="290" data-tone="muted" data-stroke-width="1.2"/>
+<rect x="798" y="290" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="828" y="312">DE</text>
+<rect x="878" y="290" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="908" y="312">ES</text>
+<rect x="958" y="290" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="988" y="312">FR</text>
+<rect x="1038" y="290" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="1068" y="312">*</text>
+<line x1="908" y1="322" x2="828" y2="358" data-tone="muted" data-stroke-width="1.2"/>
+<line x1="908" y1="322" x2="908" y2="358" data-tone="muted" data-stroke-width="1.2"/>
+<line x1="908" y1="322" x2="988" y2="358" data-tone="muted" data-stroke-width="1.2"/>
+<line x1="908" y1="322" x2="1068" y2="358" data-tone="wine" data-stroke-width="2.4"/>
+<rect x="798" y="358" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="828" y="380">alice</text>
+<rect x="878" y="358" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="908" y="380">bob</text>
+<rect x="958" y="358" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="988" y="380">…</text>
+<rect x="1038" y="358" width="60" height="32" data-tone="ink" data-fill="none" data-stroke-width="1.4"/>
+<text class="small center" x="1068" y="380">*</text>
+<line x1="1068" y1="390" x2="1020" y2="426" data-tone="wine" data-stroke-width="2.4"/>
+<rect x="878" y="290" width="60" height="32" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="908" y="312">ES</text>
+<rect x="1038" y="358" width="60" height="32" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="1068" y="380">*</text>
+<rect x="860" y="426" width="236" height="40" data-tone="wine" data-fill="wash" data-stroke-width="1.8"/>
+<text class="small wine center" x="978" y="452">SUM(amount) = 9.1 M</text></g>
+<text class="title muted" x="760" y="20">BYTES FROM S3</text>
+<g><g class="fragment fade-out" data-fragment-index="2"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: #7D8E93">0</text></g></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: var(--accent-1)">~200 GB</text></g></g>
+<g class="fragment" data-fragment-index="3"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: var(--accent-1)">0</text></g>
+<g><g class="fragment fade-out" data-fragment-index="2"><text class="small muted" x="762" y="108">of a 10 TB table</text><text class="small muted" x="762" y="130">rows read: 0</text></g></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><text class="small muted" x="762" y="108">~10 MB per file × 20 k files</text><text class="small muted" x="762" y="130">rows read: ~6 B</text></g></g>
+<g class="fragment" data-fragment-index="3"><text class="small muted" x="762" y="108">star-tree pinned locally</text><text class="small muted" x="762" y="130">rows read: <tspan class="emph">1 per segment</tspan> · 20 k</text></g>
+<g class="fragment" data-fragment-index="1"><g class="fragment fade-out" data-fragment-index="2"><text class="small" x="760" y="160">Inverted index: 300 k doc IDs, in every page</text></g></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><text class="small" x="760" y="160">Ranged GETs: the whole amount column</text></g></g>
+<g class="fragment" data-fragment-index="3"><text class="small" x="760" y="160">Star-tree: ES → any user → one record</text></g>
+</svg>
+</figure>
+  <a class="qr at-top-right" href="https://docs.pinot.apache.org/build-with-pinot/indexing/star-tree-index" data-logo="apache" data-label=""></a>
+  <aside class="notes">
+    <ul>
+      <li>Same file, an aggregation that matches ~15% of the rows</li>
+      <li>Inverted: 300 k doc IDs spread over every page → read the whole amount column</li>
+      <li>The inverted index answers the filter: the country column is never read</li>
+      <li>Per file: 2.1 M rows × 8 B ≈ 17 MB raw, ~10 MB compressed; 12 pages is schematic</li>
+      <li>Whole table: 10 TB ≈ 20 k files → ~200 GB and ~6 B rows read</li>
+      <li>Star-tree: split order (country, user), SUM(amount) pre-aggregated per node</li>
+      <li>Path: root → ES → * (any user) → 1 record per segment; pinned, so 0 bytes from S3</li>
+      <li>Star-tree is an Apache Pinot (OSS) index; External Tables can use it</li>
+      <li>Illustrative numbers</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-split" data-badge="startree">
+  <h2>StarTree Indexes in action</h2>
   <ul class="points">
-    <li>Did you create indexes?</li>
-    <li class="fragment">Can the query use them?</li>
-    <li class="fragment">Either "no": a scan, like everyone</li>
-    <li class="fragment">Both "yes": read only what you need</li>
+    <li>A different benchmark</li>
+    <li class="fragment" data-fragment-index="1">Similar query: filter + <code>SUM</code></li>
+    <li class="fragment" data-fragment-index="2">Star-tree: pre-aggregated rows</li>
+    <li class="fragment" data-fragment-index="2">~2,850× fewer rows read</li>
   </ul>
-  <figure class="diagram todo">two-question decision diagram ending in "remote scan + cache" or "pruned page reads"</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Separate StarTree benchmark, TPC-H Q6 on External Tables over 600 million rows. Range indexes alone would read about 11.4 million rows per query; a star-tree reads 4,002, about 2,850 times fewer, and 12 servers serve about 12,000 QPS at 148 ms P90">
+<text class="title muted" x="0" y="18">ROWS READ PER QUERY · TPC-H SF100, 600 M ROWS</text>
+<g class="fragment" data-fragment-index="1">
+<text class="small" x="0" y="62">Range indexes only</text>
+<rect x="0" y="76" width="440" height="26" data-color="#7D8E93" data-fill="hachure" data-stroke-width="1.3"/>
+<text class="small" x="450" y="94">~11.4 M</text>
+<text class="small muted" x="0" y="124">inferred: 114,160 measured on SF1 × 100</text>
+</g>
+<g class="fragment" data-fragment-index="2">
+<text class="small" x="0" y="172">+ star-tree</text>
+<rect x="0" y="186" width="4" height="26" data-tone="ice" data-fill="solid" data-stroke-width="1.3"/>
+<text class="small ice" x="14" y="204">4,002 · ~2,850× fewer</text>
+</g>
+<g class="fragment" data-fragment-index="3">
+<text x="0" y="310" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: var(--accent-1)">~12 k QPS</text>
+<text class="small" x="2" y="344">at 148 ms P90, 12 servers</text>
+</g>
+<text class="small muted" x="0" y="476">Not the Trino and ClickHouse benchmark: TPC-H Q6</text>
+<text class="small muted" x="0" y="500">on Parquet in S3, External Tables, 12 × i4g.4xlarge.</text>
+</svg>
+</figure>
+  <a class="qr" href="https://startree.ai/resources/beyond-databricks-and-clickhouse-125k-qps-on-open-tables/" data-logo="startree" data-label="startree.ai · 125k QPS on open tables"></a>
   <aside class="notes">
-    External Tables are one feature. Indexes are optional. Without them, or for a query that cannot use
-    them, Pinot reads Parquet like any other engine.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>You cannot beat physics</h2>
-  <ul class="points">
-    <li>Need every value? Move every byte</li>
-    <li class="fragment">From S3: pay per query</li>
-    <li class="fragment">Local copy: pay storage and sync</li>
-    <li class="fragment">Indexes change how many bytes</li>
-  </ul>
-  <figure class="diagram todo">spectrum from "local copy" to "remote scan": Pinot native · tiered storage · External Tables spanning the middle</figure>
-  <aside class="notes">
-    The honest message. Pinot covers both ends, and External Tables give it the middle. Ask before the
-    talk whether one table can be native realtime for recent data and external for history.
-  </aside>
-</section>
-
-<section class="layout-full">
-  <h2>How engines read Iceberg, completed</h2>
-  <table class="grid">
-    <thead><tr><th>Engine</th><th>Local copy</th><th>Remote scan + cache</th><th>Local indexes on remote data</th></tr></thead>
-    <tbody>
-      <tr><td>Trino / Athena</td><td class="no">—</td><td class="yes">✓</td><td class="no">✗</td></tr>
-      <tr><td>Spark</td><td class="no">—</td><td class="yes">✓</td><td class="no">✗</td></tr>
-      <tr><td>DuckDB</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">✗</td></tr>
-      <tr><td>Dremio</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
-      <tr><td>Snowflake</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
-      <tr><td>BigQuery</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
-      <tr><td>StarRocks / Doris</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
-      <tr><td>ClickHouse</td><td class="yes">✓</td><td class="yes">✓</td><td class="unk">?</td></tr>
-      <tr class="highlight"><td>StarTree Pinot</td><td class="yes">✓ native</td><td class="yes">✓ External Tables</td><td class="yes">✓ External Tables + indexes</td></tr>
-    </tbody>
-  </table>
-  <aside class="notes">
-    DRAFT, NOT VERIFIED. Callback to the end of chapter 1. Every "?" needs research; keep a "?" on the
-    slide rather than guess.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>Never mix two snapshots</h2>
-  <ul class="points">
-    <li>Compaction: 10 files become 1</li>
-    <li class="fragment">Mix before and after?</li>
-    <li class="fragment">Rows twice, or not at all</li>
-    <li class="fragment">Broker pins one snapshot per query</li>
-  </ul>
-  <figure class="diagram todo">snapshot S1 with 10 small files, S2 with 1 big file; a query reading both counts rows twice</figure>
-  <aside class="notes">
-    Each snapshot is a final.parquet in Pinot's deep store; the broker routes only to its segments and
-    fails closed if it cannot pin one. Segment groups keep this workable with millions of files:
-    content-addressed names make retries idempotent and reuse unchanged groups across snapshots.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>What to keep local</h2>
-  <ul class="points">
-    <li>Cold, nothing local: ~0.5 s</li>
-    <li class="fragment">Pinned indexes: needed for QPS</li>
-    <li class="fragment">Page cache: helps scans</li>
-    <li class="fragment">…and can hurt selective queries</li>
-  </ul>
-  <figure class="diagram todo">two small bar groups: latency by cache mode (no cache / index pinning / pinning + page cache) for Q1–Q4</figure>
-  <aside class="notes">
-    From the published benchmark: Q2 is 515 ms cold, 483 ms with index pinning, 1,211 ms with pinning plus the
-    disk page cache. For index-driven queries, caching data pages adds overhead. The older throughput chart
-    (image-30) shows the other side: without anything local, concurrent throughput collapses (filters 80 QPS,
-    aggregations 20). Single query latency and sustained QPS are different questions.
-  </aside>
-</section>
-
-<section class="layout-full">
-  <h2>Versus native Pinot</h2>
-  <table class="grid">
-    <thead><tr><th></th><th>Native segment</th><th>External segment</th></tr></thead>
-    <tbody>
-      <tr><td>Values</td><td>Local, Pinot format</td><td>S3, Parquet</td></tr>
-      <tr><td>Segment size</td><td>Pinot decides</td><td>The writer decides</td></tr>
-      <tr><td>Dictionary</td><td>Pinot's</td><td>Pinot's, built on load</td></tr>
-      <tr><td>Cold read</td><td>Local disk</td><td>S3 latency</td></tr>
-      <tr><td>Freshness</td><td>Realtime possible</td><td>Writer commits + sync</td></tr>
-    </tbody>
-  </table>
-  <aside class="notes">
-    Parquet's per-chunk dictionaries are only an encoding; Pinot remaps them to its own dictionary IDs.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>Write Iceberg for its readers</h2>
-  <ul class="points">
-    <li>Sort by the filter key</li>
-    <li>Sane file and row-group sizes</li>
-    <li>v3 deletion vectors</li>
-    <li>Compact on a schedule</li>
-  </ul>
-  <figure class="diagram todo">before/after: scattered user_id ranges vs sorted, tight ranges</figure>
-  <aside class="notes">
-    Advice that helps every engine, not only Pinot. Comcast cut 35 to 40 percent of scanned data just by
-    partitioning and sorting by device ID. Pinot applies deletion vectors only; older delete files are not
-    applied, so prefer v3 DVs.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>Configure Pinot for your queries</h2>
-  <ul class="points">
-    <li>Index what you filter on</li>
-    <li>Star-tree for dashboards</li>
-    <li>Size the cache</li>
-    <li>Same region as the bucket</li>
-  </ul>
-  <figure class="diagram todo">checklist card with a small cost note next to each item</figure>
-  <aside class="notes">
-    Every index costs one read of its column when the segment is first processed, plus storage on the S3
-    tier. Ranged S3 reads are region-strict.
-  </aside>
-</section>
-
-<section class="layout-split">
-  <h2>Pick the mode</h2>
-  <ul class="points">
-    <li>Selective, high QPS: External Tables + indexes</li>
-    <li class="fragment">Full scans, high QPS: local copy</li>
-    <li class="fragment">Ad-hoc exploration: a scan engine</li>
-    <li class="fragment">Sub-second freshness: realtime</li>
-  </ul>
-  <figure class="diagram todo">decision tree from "what does the query need?" to the four modes</figure>
-  <aside class="notes">
-    Say plainly where Pinot is not the answer: ad-hoc exploration over everything is Trino's job.
-    Pinot's strength is covering the modes that a product feature needs. Counter-example worth citing: Comcast
-    serves a 107 QPS internal API (p95 under 800 ms) straight from S3 Tables with Lambda, no indexes, because
-    the data is partitioned and sorted by the lookup key. Clustered data makes the scan mode viable.
+    <ul>
+      <li>A different benchmark: TPC-H Q6, 12 servers, warm cache</li>
+      <li>SF100 (600 M rows): ~11.4 M rows read (inferred) vs 4,002 with star-tree</li>
+      <li>Inferred = 114,160 measured on SF1 × 100</li>
+      <li>~12 k QPS at 148 ms P90; saturates near 14 k</li>
+    </ul>
   </aside>
 </section>

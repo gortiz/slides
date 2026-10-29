@@ -24,6 +24,15 @@
   --accent-2-wash: #F4E3E6;
   --accent-3: #9A6400;      /* warnings, costs */
   --accent-3-wash: #F6ECD8;
+  --good: #2E7D4F;          /* semantic: positive highlight, separate from the accents */
+  --good-wash: #DFF0E5;
+
+  /* night: dark variant for cover and chapter slides (class="night" on the section) */
+  --night-ground: #092653;
+  --night-title: #55C3DB;
+  --night-text: #A3BFD8;
+  --night-muted: #89AEC5;
+  --night-kicker: #FFC107;  /* StarTree logo yellow */
 
   /* type */
   --font-title: "Archivo", "Helvetica Neue", Arial, sans-serif;
@@ -270,6 +279,80 @@ html, body { background: var(--ground); }
   color: var(--muted);
 }
 
+/* art: <img class="art" src="..."> inside a cover or chapter section, for a transparent PNG.
+   It sits on the right of the frame, behind the text; the text column narrows to make room. */
+.reveal .slides section .frame > img.art {
+  position: absolute;
+  right: var(--pad-x);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 540px;
+  height: auto;
+  max-width: 540px;
+  object-fit: contain;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 0;
+}
+.reveal section.layout-cover .frame > img.art { height: auto; max-width: 520px; }
+.reveal section.layout-cover .frame:has(> img.art) .cover h1 { max-width: 600px; font-size: 64px; }
+.reveal section.layout-cover .frame:has(> img.art) .cover .deck { max-width: 560px; }
+.reveal section.layout-chapter .frame:has(> img.art) .chapter { max-width: 640px; }
+.reveal .slides section .frame > .cover,
+.reveal .slides section .frame > .chapter { position: relative; z-index: 1; }
+
+/* night: <section class="layout-chapter night">. The loader sets the Reveal background colour from
+   --night-ground and adds data-state="night", so the slide number and progress bar follow. */
+.reveal section.night .frame::after { color: var(--night-muted); }
+.reveal section.night .chapter .num,
+.reveal section.night.layout-chapter .chapter .num.wine { color: var(--night-kicker); }
+.reveal section.night .cover .who { color: var(--night-muted); }
+.reveal section.night .chapter .name,
+.reveal section.night .cover h1 { color: var(--night-title); }
+.reveal section.night .chapter .tagline,
+.reveal section.night .cover .deck { color: var(--night-text); }
+.reveal section.night .watch-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(163, 191, 216, 0.25);
+  color: var(--night-text);
+}
+.reveal section.night .watch-card * { color: inherit; }
+.reveal section.night a.qr { color: var(--night-muted); }
+/* a QR code needs dark modules on a light quiet zone: give it a light tile on night slides */
+.reveal section.night a.qr .qr-code { background: var(--ground); }
+.reveal-viewport.night .slide-number { color: var(--night-muted); }
+.reveal-viewport.night .progress { color: var(--night-title); }
+
+/* ---------- live polls (poll.js) ---------- */
+.reveal .poll { grid-area: body; align-self: center; width: min(880px, 100%); justify-self: center; }
+.reveal .poll-rows { display: grid; gap: 18px; }
+.reveal .poll-row { display: grid; grid-template-columns: 260px 1fr 80px; align-items: center; gap: 18px; }
+.reveal .poll-label { font-size: 30px; font-weight: 600; }
+.reveal .poll-track { height: 40px; border: 2px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.reveal .poll-fill { display: block; height: 100%; width: 0; background: var(--accent-1-wash);
+  border-right: 3px solid var(--accent-1); transition: width 600ms ease; }
+.reveal .poll-row.poll-top .poll-fill { background: var(--accent-1); }
+.reveal .poll-count { font-family: var(--font-mono); font-size: 28px; color: var(--ink-soft); }
+.reveal .poll-foot { margin-top: 22px; display: flex; gap: 24px; font-family: var(--font-mono); font-size: 18px; color: var(--muted); }
+/* results stay hidden until the poll-reveal fragment: only the number of votes shows */
+.reveal .poll:not(.revealed) .poll-fill { width: 0 !important; border-right-color: transparent; }
+.reveal .poll:not(.revealed) .poll-count { visibility: hidden; }
+.reveal .poll.poll-offline .poll-track, .reveal .poll.poll-offline .poll-count, .reveal .poll.poll-offline .poll-total { visibility: hidden; }
+.reveal .poll-status:empty { display: none; }
+/* leave the bottom-left corner to the QR code that tells the room where to vote */
+.reveal .slides section .frame:has(> a.qr:not(.at-right)) > .poll { justify-self: end; width: calc(100% - 250px); }
+.reveal span.fragment.poll-reveal { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* ?show-hidden: slides marked data-visibility="hidden" come back with this tag */
+.reveal section.was-hidden .frame::before {
+  content: "HIDDEN";
+  position: absolute; top: 18px; right: var(--pad-x);
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.14em;
+  color: var(--accent-3); border: 2px dashed var(--accent-3); padding: 2px 8px; border-radius: 4px;
+}
+
 /* ---------- tables ---------- */
 .reveal table.grid {
   border-collapse: collapse;
@@ -343,3 +426,164 @@ html.reveal-print .reveal .slides .pdf-page > section .frame { inset: 0; }
   grid-template-areas: "title" "body" "note" "footer";
 }
 .reveal section.layout-full .frame > .footnote { grid-area: note; margin: 12px 0 6px; }
+
+/* table.grid.dense: for tables with many rows */
+.reveal table.grid.dense { font-size: 21px; }
+.reveal table.grid.dense td { padding: 6px 14px; }
+.reveal table.grid.dense th { padding: 8px 14px; }
+.reveal table.grid td small { font-size: 0.78em; color: var(--muted); font-weight: 400; }
+
+/* ---------- hand-drawn diagrams (sketch.js) ---------- */
+.reveal svg.sketch { width: 100%; height: 100%; overflow: visible; }
+.reveal svg.sketch text {
+  font-family: var(--font-hand);
+  font-size: 22px;
+  fill: var(--ink);
+  dominant-baseline: middle;
+}
+.reveal svg.sketch text.title { font-family: var(--font-mono); font-size: 17px; font-weight: 600; letter-spacing: 0.04em; }
+.reveal svg.sketch text.small { font-size: 18px; fill: var(--ink-soft); }
+.reveal svg.sketch text.ice { fill: var(--accent-1); }
+.reveal svg.sketch text.wine { fill: var(--accent-2); }
+.reveal svg.sketch text.amber { fill: var(--accent-3); }
+.reveal svg.sketch text.muted { fill: var(--muted); }
+.reveal svg.sketch .center { text-anchor: middle; }
+.reveal svg.sketch tspan.emph { font-weight: 700; fill: var(--accent-2); }
+
+/* draw-on: strokes inside a fragment draw themselves when the fragment appears */
+.reveal svg.sketch .fragment path.draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
+.reveal svg.sketch .fragment.visible path.draw { stroke-dashoffset: 0; transition: stroke-dashoffset 0.7s ease-out; }
+.reveal svg.sketch .fragment text { transition: opacity 0.4s ease 0.35s; }
+html.sketch-static .reveal svg.sketch path.draw { stroke-dasharray: none; stroke-dashoffset: 0; transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal svg.sketch path.draw { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; transition: none !important; }
+}
+
+/* ---------- source QR codes (qr.js) ---------- */
+.reveal a.qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--muted);
+}
+.reveal a.qr .qr-code { width: 104px; height: 104px; display: block; border-radius: 4px; }
+.reveal a.qr .qr-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  max-width: 150px;
+  text-align: center;
+  line-height: 1.2;
+}
+/* inside a slide: bottom-left corner of the body, big enough to scan from the room.
+   The doubled class beats the layouts' grid-placement rules, so the code is positioned against
+   the whole frame rather than a grid cell. Keep that corner free on slides that carry a QR. */
+.reveal .slides section .frame > a.qr.qr {
+  grid-area: auto;
+  position: absolute;
+  left: var(--pad-x);
+  bottom: calc(var(--pad-bottom) + var(--footer-row) + 4px);
+  align-items: flex-start;
+  gap: 6px;
+}
+.reveal .frame > a.qr .qr-code { width: 170px; height: 170px; }
+.reveal .frame > a.qr .qr-label { text-align: left; max-width: 340px; font-size: 13px; }
+/* layout-full: the footnote moves right of the code */
+.reveal section.layout-full .frame:has(> a.qr:not(.at-right)) > .footnote { padding-left: 200px; }
+/* a.qr.at-right: bottom-right corner instead, for slides whose bottom-left is busy */
+.reveal .slides section .frame > a.qr.qr.at-right { left: auto; right: var(--pad-x); align-items: flex-end; }
+.reveal .frame > a.qr.at-right .qr-label { text-align: right; }
+.reveal section.layout-full .frame:has(> a.qr.at-right) > .footnote { padding-right: 200px; }
+/* a full-width table next to a bottom-right QR: leave the QR its column */
+.reveal section.layout-full .frame:has(> a.qr.at-right) > table.grid { width: calc(100% - 200px); }
+
+/* recommended video / article card */
+.reveal .watch-card {
+  display: grid;
+  grid-template-columns: 300px 150px;
+  grid-template-rows: auto auto;
+  gap: 14px 18px;
+  align-items: end;
+  width: 500px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.reveal .watch-card img { width: 300px; border-radius: 4px; display: block; grid-row: 1; grid-column: 1; margin: 0; }
+.reveal .watch-card a.qr { grid-row: 1; grid-column: 2; }
+.reveal .watch-card .meta { grid-row: 2; grid-column: 1 / span 2; display: flex; flex-direction: column; gap: 4px; }
+.reveal .watch-card .kicker { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.14em; color: var(--accent-1); }
+.reveal .watch-card .t { font-family: var(--font-title); font-weight: 600; font-size: 21px; line-height: 1.2; }
+.reveal .watch-card .by { font-size: 17px; color: var(--muted); }
+.reveal section.layout-chapter .frame > .watch-card { grid-area: body; align-self: end; justify-self: end; }
+/* in a split slide, under the bullets: <div class="left-stack"><ul>…</ul><div class="watch-card">…</div></div> */
+.reveal section.layout-split .left-stack > .watch-card { margin-top: auto; }
+
+/* ---------- corner badge (data-badge on <section>, labels in window.DECK.badges) ---------- */
+/* doubled class: beat the layouts' grid-placement rules, as for a.qr */
+.reveal .slides section .frame > .badge.badge {
+  grid-area: auto;
+  position: absolute;
+  bottom: calc(var(--pad-bottom) - 3px);
+  right: calc(var(--pad-x) + 84px);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 3px;
+  border: 1.5px solid currentColor;
+}
+.reveal .badge.tone-ice { color: var(--accent-1); background: var(--accent-1-wash); }
+.reveal .badge.tone-wine { color: var(--accent-2); background: var(--accent-2-wash); }
+.reveal .badge.tone-amber { color: var(--accent-3); background: var(--accent-3-wash); }
+.reveal .badge.tone-good { color: var(--good); background: var(--good-wash); }
+.reveal .badge.tone-muted { color: var(--muted); background: var(--surface-sunk); }
+
+/* table row highlight in the positive colour */
+.reveal table.grid tr.highlight.good td { background: var(--good-wash); }
+.reveal table.grid tr.highlight.good td:first-child { color: var(--good); }
+.reveal .watch-card a.qr .qr-code { width: 150px; height: 150px; }
+
+/* links slide: a grid of QR cards */
+.reveal .link-grid {
+  grid-area: body;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px 28px;
+  align-content: start;
+}
+.reveal .link-grid .link { display: flex; flex-direction: column; gap: 6px; }
+.reveal .link-grid .link .qr-code { width: 150px; height: 150px; }
+.reveal .link-grid .link .what { font-family: var(--font-title); font-weight: 600; font-size: 19px; line-height: 1.2; }
+.reveal .link-grid .link a.qr .qr-label { text-align: left; font-size: 12px; }
+.reveal .link-grid .link.pending .qr-slot {
+  width: 150px; height: 150px; border: 2px dashed var(--rule); border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--font-hand); font-size: 18px; color: var(--muted);
+}
+.reveal .link-grid .link a.qr { align-items: flex-start; }
+/* static mode (?all-fragments, PDF): show only the final state of swapping values */
+html.sketch-static .reveal svg.sketch .fragment.fade-out,
+html.sketch-static .reveal svg.sketch .fragment.current-visible { display: none; }
+
+/* fragment lift: when a fragment with class "lift" appears, the slide's figure.diagram moves up by
+   --lift (set on the figure), making room for what the fragment adds below it */
+.reveal section:has(.fragment.lift) .frame > figure.diagram { transition: transform 0.6s ease; }
+.reveal section:has(.fragment.lift.visible) .frame > figure.diagram { transform: translateY(var(--lift, -100px)); }
+.reveal section.layout-full .frame > table.grid.lift { align-self: end; }
+/* the lift's companions: text fading out inside the figure fades while the diagram moves, and the
+   fragments that appear with it wait until the diagram has stopped */
+.reveal .slides section:has(.fragment.lift) figure.diagram .fragment.fade-out { transition: opacity 0.6s ease; }
+.reveal .slides section:has(.fragment.lift) .frame > .fragment.visible:not(.fade-out) {
+  transition: opacity 0s linear 0.6s, transform 0s linear 0.6s;
+}
+/* a.qr.at-top-right: top-right corner, beside the title, for slides whose bottom corners are busy */
+.reveal .slides section .frame > a.qr.qr.at-top-right {
+  left: auto; right: var(--pad-x); bottom: auto; top: 24px; align-items: flex-end;
+}
+.reveal .frame > a.qr.at-top-right .qr-label { text-align: right; }

@@ -11,11 +11,11 @@ Press `S` for the speaker view (notes and timer). Export with `template/export-p
 | Chapter | File | Target |
 |---|---|---|
 | Opening | `chapters/00-opening.html` | 1 min |
-| Two lines | `chapters/01-two-lines.html` | 3 min |
-| Iceberg | `chapters/02-iceberg.html` | 15 min |
+| Iceberg | `chapters/02-iceberg.html` | 13 min |
 | Pinot | `chapters/03-pinot.html` | 11 min |
-| Iceberg ♥ Pinot | `chapters/04-together.html` | 18 min |
-| Closing | `chapters/05-closing.html` | 1 min + Q&A |
+| Iceberg ♥ Pinot | `chapters/04-together.html` | 12 min |
+| Wrapping up | `chapters/05-wrapping-up.html` | 9 min |
+| Closing | `chapters/06-closing.html` | 1 min + Q&A |
 
 Placeholders (`figure.diagram.todo`) describe each diagram still to draw with Rough.js.
 Cells marked `?` in the engine table are unverified: do not present them as facts.

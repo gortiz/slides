@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Serves one talk folder over HTTP so the reveal.js deck can load its chapter files.
+#
+#   ./serve.sh                     # list the talks
+#   ./serve.sh iceberg-pinot       # serve it on http://127.0.0.1:8000/
+#   ./serve.sh iceberg-pinot 9000  # custom port
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+list_talks() {
+  echo "Usage: $0 <talk> [port]"
+  echo "Talks:"
+  find "$ROOT" -mindepth 2 -maxdepth 2 -name index.html -not -path '*/.*' \
+    | xargs -n1 dirname | xargs -n1 basename | sort | sed 's/^/  /'
+}
+
+if [[ $# -lt 1 ]]; then
+  list_talks
+  exit 1
+fi
+
+TALK="$1"
+PORT="${2:-8000}"
+if [[ ! -f "$ROOT/$TALK/index.html" ]]; then
+  echo "No talk named '$TALK' (missing $ROOT/$TALK/index.html)." >&2
+  list_talks >&2
+  exit 1
+fi
+
+echo "Serving $TALK on http://127.0.0.1:$PORT/  (Ctrl+C to stop)"
+cd "$ROOT/$TALK"
+exec python3 -m http.server "$PORT" --bind 127.0.0.1

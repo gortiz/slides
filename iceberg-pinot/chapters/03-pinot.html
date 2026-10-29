@@ -1,4 +1,5 @@
-<section class="layout-chapter">
+<section class="layout-chapter night">
+  <img class="art" src="assets/startree/iceberg-startree-art.png" alt="">
   <div class="chapter">
     <span class="num wine">CHAPTER 2</span>
     <span class="name">Pinot</span>
@@ -6,22 +7,51 @@
   </div>
 </section>
 
-<section class="layout-split">
+<section class="layout-full" data-badge="oss">
   <h2>Why Pinot exists</h2>
-  <ul class="points">
-    <li>"Who viewed your profile"</li>
-    <li>Analytics for every user</li>
-    <li>Thousands of queries per second</li>
-    <li>Milliseconds, not seconds</li>
-  </ul>
-  <figure class="diagram todo">a phone showing a personal stats card; behind it a stream of concurrent queries</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Many users (alice, bob, carol, a million more) each open their own analytics card; their queries all hit Pinot at thousands of queries per second">
+<rect x="20" y="20" width="120" height="190" data-tone="wine" data-fill="none" data-stroke-width="2" />
+<text class="small wine center" x="80" y="44">who viewed</text>
+<text class="small wine center" x="80" y="66">your profile</text>
+<text class=" center" x="80" y="104">37</text>
+<text class="small center" x="80" y="128">this week</text>
+<text class="center" x="80" y="172" style="font-size: 30px">👩🏽</text>
+<text class="small muted center" x="80" y="198">alice</text>
+<line class="arrow" x1="80" y1="214" x2="300" y2="340" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<rect x="170" y="20" width="120" height="190" data-tone="wine" data-fill="none" data-stroke-width="2" />
+<text class="small wine center" x="230" y="44">who viewed</text>
+<text class="small wine center" x="230" y="66">your profile</text>
+<text class=" center" x="230" y="104">12</text>
+<text class="small center" x="230" y="128">this week</text>
+<text class="center" x="230" y="172" style="font-size: 30px">👨🏿</text>
+<text class="small muted center" x="230" y="198">bob</text>
+<line class="arrow" x1="230" y1="214" x2="300" y2="340" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<rect x="320" y="20" width="120" height="190" data-tone="wine" data-fill="none" data-stroke-width="2" />
+<text class="small wine center" x="380" y="44">who viewed</text>
+<text class="small wine center" x="380" y="66">your profile</text>
+<text class=" center" x="380" y="104">91</text>
+<text class="small center" x="380" y="128">this week</text>
+<text class="center" x="380" y="172" style="font-size: 30px">🧑🏼</text>
+<text class="small muted center" x="380" y="198">carol</text>
+<line class="arrow" x1="380" y1="214" x2="300" y2="340" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<text class="small muted center" x="560" y="110">…×1,000,000</text>
+<line class="arrow" x1="560" y1="130" x2="400" y2="340" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<rect x="200" y="344" width="240" height="70" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="title wine center" x="320.0" y="379.0">Pinot</text>
+<text class="small center" x="320" y="450">thousands of QPS</text>
+<text class="small center" x="320" y="478">tens of milliseconds each</text>
+</svg>
+</figure>
   <aside class="notes">
-    A warehouse serves a few analysts. Pinot serves every user of the product, so concurrency and tail
-    latency come first. Tie back to plays: "your week in music" is the same shape of problem.
+    <ul>
+      <li>Analytics for every user: thousands of QPS, tens of ms</li>
+      <li>A warehouse serves analysts; Pinot serves the product</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
+<section class="layout-split" data-badge="oss">
   <h2>The moving parts</h2>
   <ul class="points">
     <li><strong>Controller:</strong> metadata, assignment</li>
@@ -30,91 +60,513 @@
     <li><strong>Minion:</strong> background jobs</li>
     <li>ZooKeeper + deep store</li>
   </ul>
-  <figure class="diagram todo">four service boxes, ZooKeeper (Helix) in the middle, deep store below</figure>
-  <aside class="notes">Keep it to what the following diagrams need. Unlike Iceberg, these are running servers.</aside>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Pinot architecture: broker routes queries to servers; controller, ZooKeeper and minion manage metadata and jobs; segments live in a deep store">
+<rect x="240" y="6" width="160" height="44" data-tone="muted" data-fill="none" data-stroke-width="1.6" />
+<text class="title muted center" x="320.0" y="28.0">client</text>
+<line class="arrow" x1="320" y1="50" x2="320" y2="86" data-tone="muted" data-stroke-width="1.5" data-head="12"/>
+<text class="small ice" x="332" y="74">SQL</text>
+<rect x="220" y="90" width="200" height="56" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="title center" x="320.0" y="107.0">Broker</text>
+<text class="small center" x="320.0" y="131.0">plans, routes, merges</text>
+<rect x="10" y="90" width="170" height="56" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="title center" x="95.0" y="107.0">Controller</text>
+<text class="small center" x="95.0" y="131.0">metadata</text>
+<rect x="460" y="90" width="170" height="56" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="title center" x="545.0" y="107.0">Minion</text>
+<text class="small center" x="545.0" y="131.0">background jobs</text>
+<rect x="10" y="206" width="170" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="title muted center" x="95.0" y="223.0">ZooKeeper</text>
+<text class="small center" x="95.0" y="247.0">Helix state</text>
+<line x1="95" y1="146" x2="95" y2="206" data-tone="muted" data-stroke-width="1.5"/>
+<line x1="180" y1="236" x2="208" y2="240" data-tone="muted" data-stroke-width="1.2"/>
+<rect x="210" y="210" width="128" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="274.0" y="229.0">Server</text>
+<text class="small center" x="274.0" y="253.0">segments</text>
+<line class="arrow" x1="320" y1="146" x2="274" y2="206" data-tone="ice" data-stroke-width="1.4" data-head="12"/>
+<line class="arrow" x1="274" y1="386" x2="274" y2="274" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<rect x="353" y="210" width="128" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="417.0" y="229.0">Server</text>
+<text class="small center" x="417.0" y="253.0">segments</text>
+<line class="arrow" x1="320" y1="146" x2="417" y2="206" data-tone="ice" data-stroke-width="1.4" data-head="12"/>
+<line class="arrow" x1="417" y1="386" x2="417" y2="274" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<rect x="496" y="210" width="128" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="560.0" y="229.0">Server</text>
+<text class="small center" x="560.0" y="253.0">segments</text>
+<line class="arrow" x1="320" y1="146" x2="560" y2="206" data-tone="ice" data-stroke-width="1.4" data-head="12"/>
+<line class="arrow" x1="560" y1="386" x2="560" y2="274" data-tone="muted" data-stroke-width="1.2" data-head="12"/>
+<rect x="10" y="390" width="620" height="60" data-tone="muted" data-fill="none" data-stroke-width="1.6" />
+<text class="title muted center" x="320.0" y="420.0">Deep store (S3, GCS, …)</text>
+<path class="arrow" d="M 95 262 C 95 320 95 350 95 386" data-tone="muted" data-stroke-width="1.2"/>
+<path class="arrow" d="M 630 118 C 655 200 650 330 610 386" data-tone="muted" data-stroke-width="1.2"/>
+<text class="small muted center" x="320" y="482">segments: immutable files in the deep store, loaded by servers</text>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Only what the next diagrams need</li>
+      <li>Unlike Iceberg: running servers</li>
+      <li>Clients send SQL to the broker</li>
+    </ul>
+  </aside>
 </section>
 
-<section class="layout-split">
+<section class="layout-split" data-badge="oss">
   <h2>Tables all the way down</h2>
   <ul class="points">
     <li>Table</li>
-    <li class="fragment">Partitions</li>
-    <li class="fragment">Segments: immutable, columnar</li>
-    <li class="fragment">Indexes per column</li>
+    <li class="fragment" data-fragment-index="1">Partitions</li>
+    <li class="fragment" data-fragment-index="2">Segments: immutable, columnar</li>
+    <li class="fragment" data-fragment-index="3">Metadata + indexes per column</li>
   </ul>
-  <figure class="diagram todo">nested boxes: table → partitions → segments → per-column index files (forward, dictionary, inverted, range, star-tree)</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="A table holds partitions, partitions hold immutable segments, and each segment holds per-column metadata (min, max, distinct values) and one index file per column and index type">
+<rect x="10" y="6" width="620" height="330" data-tone="ink" data-fill="none" data-stroke-width="2.2" />
+<text class="title" x="26" y="28">TABLE · plays</text>
+<g class="fragment " data-fragment-index="1">
+<rect x="30" y="48" width="180" height="270" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="title muted" x="44" y="68">PARTITION 0</text>
+<rect x="230" y="48" width="180" height="270" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="title muted" x="244" y="68">PARTITION 1</text>
+<rect x="430" y="48" width="180" height="270" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="title muted" x="444" y="68">PARTITION 2</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<rect x="44" y="86" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="120.0" y="116.0">segment 0</text>
+<rect x="44" y="160" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="120.0" y="190.0">segment 1</text>
+<rect x="44" y="234" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="120.0" y="264.0">segment 2</text>
+<rect x="244" y="86" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="320.0" y="116.0">segment 3</text>
+<rect x="244" y="160" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="320.0" y="190.0">segment 4</text>
+<rect x="244" y="234" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="320.0" y="264.0">segment 5</text>
+<rect x="444" y="86" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="520.0" y="116.0">segment 6</text>
+<rect x="444" y="160" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="520.0" y="190.0">segment 7</text>
+<rect x="444" y="234" width="152" height="60" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="title ice center" x="520.0" y="264.0">segment 8</text>
+</g>
+<g class="fragment " data-fragment-index="3">
+<path class="arrow" d="M 260 226 C 300 300 300 330 300 346" data-tone="wine" data-stroke-width="1.6"/>
+<rect x="10" y="350" width="620" height="164" data-tone="wine" data-fill="none" data-stroke-width="1.8" />
+<text class="title wine" x="26" y="370">SEGMENT 4 · 2.1 M rows</text>
+<rect x="26" y="382" width="590" height="56" data-tone="amber" data-fill="wash" data-stroke-width="1.4" />
+<text class="small amber" x="40" y="404">metadata, per column: min · max · distinct values</text>
+<text class="small" x="40" y="427">user: 'alice' … 'zoe' · 61 k</text>
+<text class="small" x="330" y="427">ts: 00:00 … 23:59 · 86 k</text>
+<rect x="26" y="448" width="110" height="52" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="small center" x="81.0" y="479.0">forward</text>
+<rect x="146" y="448" width="110" height="52" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="small center" x="201.0" y="479.0">dictionary</text>
+<rect x="266" y="448" width="110" height="52" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="321.0" y="479.0">inverted</text>
+<rect x="386" y="448" width="110" height="52" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="441.0" y="479.0">range</text>
+<rect x="506" y="448" width="110" height="52" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="561.0" y="479.0">star-tree</text>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    A segment is self-contained: its own dictionaries, forward index, other indexes, and metadata.
-    Each index is a plug-in per column. That detail is what makes chapter 3 possible.
+    <ul>
+      <li>Segment: self-contained (forward, dictionary, indexes, metadata)</li>
+      <li>Metadata per column: min, max, cardinality: the broker prunes on it</li>
+      <li>Indexes are per-column plugins: that is what makes External Tables possible</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split even">
-  <h2>Min/max versus an index</h2>
-  <ul class="points">
-    <li>Min/max: "which files might"</li>
-    <li class="fragment">Inverted index: "which rows"</li>
-    <li class="fragment">Star-tree: pre-aggregated answers</li>
-  </ul>
-  <figure class="diagram todo">same query as the "min/max gives up" slide; inverted index jumps straight to the matching doc IDs; byte counter drops</figure>
-  <aside class="notes">Callback to chapter 1. This is the gap Pinot was designed around.</aside>
-</section>
-
-<section class="layout-split">
-  <h2>A query, end to end</h2>
-  <ol class="points">
-    <li>Broker prunes segments</li>
-    <li class="fragment">Scatter to servers</li>
-    <li class="fragment">Servers use indexes</li>
-    <li class="fragment">Broker merges results</li>
-  </ol>
-  <figure class="diagram todo">message animation: client → broker → three servers → broker → client, with segments greyed out when pruned</figure>
-  <aside class="notes">The broker prunes on metadata before any server reads a byte. Same idea as Iceberg manifests.</aside>
-</section>
-
-<section class="layout-split">
+<section class="layout-split" data-badge="oss">
   <h2>Offline ingestion</h2>
   <ol class="points">
     <li>Job builds a segment</li>
-    <li class="fragment">Upload to deep store</li>
-    <li class="fragment">Controller registers it</li>
-    <li class="fragment">Servers download and serve</li>
+    <li class="fragment" data-fragment-index="1">Upload to deep store</li>
+    <li class="fragment" data-fragment-index="2">Controller registers it</li>
+    <li class="fragment" data-fragment-index="3">Servers download and serve</li>
   </ol>
-  <figure class="diagram todo">sequence: batch job → deep store → controller → ZooKeeper → servers</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Offline ingestion sequence: a batch job builds a segment, uploads it to the deep store, registers it with the controller, and servers download and serve it">
+<rect x="0" y="10" width="140" height="44" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="small center" x="70.0" y="32.0">batch job</text>
+<line x1="70" y1="54" x2="70" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="160" y="10" width="140" height="44" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="230.0" y="32.0">deep store</text>
+<line x1="230" y1="54" x2="230" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="320" y="10" width="140" height="44" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="small center" x="390.0" y="32.0">controller</text>
+<line x1="390" y1="54" x2="390" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="490" y="10" width="140" height="44" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="560.0" y="32.0">servers</text>
+<line x1="560" y1="54" x2="560" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="10" y="80" width="120" height="50" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="70.0" y="105.0">build segment</text>
+<g class="fragment " data-fragment-index="1">
+<line class="arrow" x1="70" y1="170" x2="230" y2="170" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="150.0" y="158">upload</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<line class="arrow" x1="70" y1="240" x2="390" y2="240" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="230.0" y="228">register segment</text>
+<rect x="320" y="262" width="140" height="44" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="small wine center" x="390.0" y="284.0">IdealState</text>
+<text class="small muted center" x="390" y="326">via ZooKeeper</text>
+</g>
+<g class="fragment " data-fragment-index="3">
+<line class="arrow" x1="390" y1="370" x2="560" y2="370" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="475.0" y="358">assigned to you</text>
+<line class="arrow" x1="560" y1="420" x2="230" y2="420" data-tone="muted" data-stroke-width="1.6" data-head="12"/>
+<text class="small muted center" x="395.0" y="436">download</text>
+<rect x="490" y="450" width="140" height="44" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="560.0" y="472.0">ONLINE</text>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    Say the parallel out loud: build an immutable file, store it, flip the metadata. That is an Iceberg
-    commit, written years earlier by a different team.
+    <ul>
+      <li>Build an immutable file, store it, flip the metadata</li>
+      <li>= an Iceberg commit, years earlier</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
+<section class="layout-split" data-badge="oss">
   <h2>Realtime ingestion</h2>
   <ol class="points">
     <li>Servers consume a Kafka partition</li>
-    <li class="fragment">Rows are queryable at once</li>
-    <li class="fragment">Segment fills up</li>
-    <li class="fragment">One replica commits it</li>
-    <li class="fragment">It becomes immutable</li>
+    <li class="fragment" data-fragment-index="1">Rows are queryable at once</li>
+    <li class="fragment" data-fragment-index="2">Segment fills up</li>
+    <li class="fragment" data-fragment-index="3">One replica commits it</li>
+    <li class="fragment" data-fragment-index="4">It becomes immutable</li>
   </ol>
-  <figure class="diagram todo">Kafka → consuming segment on 2 replicas → controller picks a committer → segment to deep store → ONLINE</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Realtime ingestion: two replicas consume a Kafka partition, rows are queryable at once, the controller picks one replica to commit, and the segment becomes immutable">
+<rect x="0" y="10" width="140" height="44" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="70.0" y="32.0">Kafka partition</text>
+<line x1="70" y1="54" x2="70" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="160" y="10" width="140" height="44" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="230.0" y="32.0">server A</text>
+<line x1="230" y1="54" x2="230" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="320" y="10" width="140" height="44" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="390.0" y="32.0">server B</text>
+<line x1="390" y1="54" x2="390" y2="500" data-tone="muted" data-stroke-width="1"/>
+<rect x="490" y="10" width="140" height="44" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="small center" x="560.0" y="32.0">controller</text>
+<line x1="560" y1="54" x2="560" y2="500" data-tone="muted" data-stroke-width="1"/>
+<line class="arrow" x1="70" y1="90" x2="230" y2="90" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="150.0" y="78">rows</text>
+<line class="arrow" x1="70" y1="130" x2="390" y2="130" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="230.0" y="146">rows</text>
+<g class="fragment " data-fragment-index="1">
+<rect x="160" y="160" width="300" height="44" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="310.0" y="182.0">consuming segment: queryable now</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<line class="arrow" x1="230" y1="250" x2="560" y2="250" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="395.0" y="238">segment full at offset 1,000</text>
+<line class="arrow" x1="390" y1="290" x2="560" y2="290" data-tone="ink" data-stroke-width="1.6" data-head="12"/>
+<text class="small ink center" x="475.0" y="306">full</text>
+</g>
+<g class="fragment " data-fragment-index="3">
+<line class="arrow" x1="560" y1="350" x2="230" y2="350" data-tone="wine" data-stroke-width="1.6" data-head="12"/>
+<text class="small wine center" x="395.0" y="338">you commit</text>
+<rect x="160" y="380" width="140" height="44" data-tone="wine" data-fill="wash" data-stroke-width="1.6" />
+<text class="small wine center" x="230.0" y="402.0">upload, seal</text>
+</g>
+<g class="fragment " data-fragment-index="4">
+<line class="arrow" x1="560" y1="450" x2="390" y2="450" data-tone="wine" data-stroke-width="1.6" data-head="12"/>
+<text class="small wine center" x="475.0" y="438">keep or download</text>
+<rect x="250" y="470" width="280" height="40" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="390.0" y="490.0">immutable segment: ONLINE</text>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    Low-level consumer only, happy path only. The message to keep: even realtime data ends up as an
-    immutable segment. Freshness comes back in the "when to use" section.
+    <ul>
+      <li>Happy path only</li>
+      <li>Realtime data also ends as immutable segments</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
-  <h2>Tiered storage</h2>
-  <ul class="points">
-    <li>Segments stay in S3</li>
-    <li>Read on demand</li>
-    <li>Pin hot indexes locally</li>
-    <li class="fragment">What if the files were not ours?</li>
-  </ul>
-  <figure class="diagram todo">server with a small local disk (pinned indexes, cache) reading pages from Pinot segments in S3</figure>
+<section class="layout-split" data-badge="oss">
+  <h2>A SQL query, end to end</h2>
+  <ol class="points">
+    <li class="fragment" data-fragment-index="1">Broker prunes segments</li>
+    <li class="fragment" data-fragment-index="2">Leaf stage: servers scan with indexes</li>
+    <li class="fragment" data-fragment-index="3">Intermediate stages: shuffle, join, aggregate</li>
+    <li class="fragment" data-fragment-index="4">Broker returns the result</li>
+  </ol>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Query path: broker prunes segments, leaf stages on servers scan with indexes, intermediate stages shuffle and join, broker returns the result">
+<rect x="240" y="4" width="160" height="40" data-tone="muted" data-fill="none" data-stroke-width="1.6" />
+<text class="title muted center" x="320.0" y="24.0">client</text>
+<rect x="220" y="70" width="200" height="50" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="title center" x="320.0" y="95.0">Broker</text>
+<rect x="30" y="200" width="170" height="120" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="42" y="218">server 1</text>
+<rect x="42" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="94" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="146" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="235" y="200" width="170" height="120" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="247" y="218">server 2</text>
+<rect x="247" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="299" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="351" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="440" y="200" width="170" height="120" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="452" y="218">server 3</text>
+<rect x="452" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="504" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<rect x="556" y="236" width="44" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.2" />
+<g class="fragment " data-fragment-index="1">
+<line x1="150" y1="240" x2="186" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="186" y1="240" x2="150" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="251" y1="240" x2="287" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="287" y1="240" x2="251" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="303" y1="240" x2="339" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="339" y1="240" x2="303" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="560" y1="240" x2="596" y2="302" data-tone="muted" data-stroke-width="2"/>
+<line x1="596" y1="240" x2="560" y2="302" data-tone="muted" data-stroke-width="2"/>
+<text class="small muted center" x="560" y="95">prune on metadata</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<line class="arrow" x1="320" y1="120" x2="115" y2="196" data-tone="ice" data-stroke-width="1.6" data-head="12"/>
+<line class="arrow" x1="320" y1="120" x2="320" y2="196" data-tone="ice" data-stroke-width="1.6" data-head="12"/>
+<line class="arrow" x1="320" y1="120" x2="525" y2="196" data-tone="ice" data-stroke-width="1.6" data-head="12"/>
+<text class="small ice center" x="560" y="160">leaf stage</text>
+</g>
+<g class="fragment " data-fragment-index="3">
+<rect x="130" y="410" width="150" height="50" data-tone="amber" data-fill="wash" data-stroke-width="1.6" />
+<text class="title amber center" x="205.0" y="435.0">worker 1</text>
+<rect x="360" y="410" width="150" height="50" data-tone="amber" data-fill="wash" data-stroke-width="1.6" />
+<text class="title amber center" x="435.0" y="435.0">worker 2</text>
+<line class="arrow" x1="115" y1="322" x2="205" y2="406" data-tone="amber" data-stroke-width="1.2" data-head="10"/>
+<line class="arrow" x1="115" y1="322" x2="435" y2="406" data-tone="amber" data-stroke-width="1.2" data-head="10"/>
+<line class="arrow" x1="320" y1="322" x2="205" y2="406" data-tone="amber" data-stroke-width="1.2" data-head="10"/>
+<line class="arrow" x1="320" y1="322" x2="435" y2="406" data-tone="amber" data-stroke-width="1.2" data-head="10"/>
+<line class="arrow" x1="525" y1="322" x2="205" y2="406" data-tone="amber" data-stroke-width="1.2" data-head="10"/>
+<line class="arrow" x1="525" y1="322" x2="435" y2="406" data-tone="amber" data-stroke-width="1.2" data-head="10"/>
+<text class="small amber center" x="320" y="492">intermediate stages: shuffle, join, aggregate</text>
+</g>
+<g class="fragment " data-fragment-index="4">
+<path class="arrow" d="M 512 435 C 645 400 645 140 424 98" data-tone="wine" data-stroke-width="1.8"/>
+<line class="arrow" x1="320" y1="70" x2="320" y2="46" data-tone="wine" data-stroke-width="1.8" data-head="12"/>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    StarTree feature. The bridge to chapter 3, and more than a metaphor: an External Table segment IS a
-    tiered-storage segment on an S3 tier. The only difference is that its forward index points at
-    Parquet somebody else wrote.
+    <ul>
+      <li>Broker prunes on metadata before any server reads a byte</li>
+      <li>Leaf stages: servers that hold the segments, with indexes</li>
+      <li>Intermediate stages: shuffle, join, aggregate</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-badge="oss">
+  <h2>Reading one Pinot segment</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 -28 1136 498" role="img" aria-label="Pinot answers SUM(amount) WHERE user = 'bob' on one segment of 2.1 million rows: the in-memory metadata keeps the segment, the dictionary maps 'bob' to id 12, the inverted index returns three doc IDs without scanning, and the forward index of amount is read for those three rows only.">
+<text class="small muted" x="0" y="-6">SELECT SUM(amount) FROM plays</text>
+<text class="small muted" x="0" y="18">WHERE user = 'bob'</text>
+<rect x="0" y="40" width="700" height="400" data-tone="wine" data-fill="none" data-stroke-width="1.8"/>
+<text class="title wine" x="16" y="62">SEGMENT 4 · 2.1 M rows</text>
+<rect x="16" y="74" width="668" height="42" data-tone="muted" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted" x="30" y="101">metadata · partition 1 · user 'alice' … 'zoe' · 61 k distinct</text>
+<text class="small" x="30" y="159">user</text>
+<rect x="150" y="132" width="110" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="205" y="159">dictionary</text>
+<rect x="270" y="132" width="110" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="325" y="159">inverted</text>
+<rect x="390" y="132" width="290" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="535" y="159">forward</text>
+<text class="small" x="30" y="217">amount</text>
+<rect x="150" y="190" width="530" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="415" y="217">forward</text>
+<text class="small" x="30" y="275">ts</text>
+<rect x="150" y="248" width="410" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="355" y="275">forward</text>
+<rect x="570" y="248" width="110" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="625" y="275">range</text>
+<text class="small" x="30" y="333">track_id</text>
+<rect x="150" y="306" width="110" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="205" y="333">dictionary</text>
+<rect x="270" y="306" width="410" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="475" y="333">forward</text>
+<text class="small" x="30" y="391">country</text>
+<rect x="150" y="364" width="110" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="205" y="391">dictionary</text>
+<rect x="270" y="364" width="410" height="42" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="475" y="391">forward</text>
+<g class="fragment" data-fragment-index="1"><rect x="16" y="74" width="668" height="42" data-tone="amber" data-fill="wash" data-stroke-width="2"/><text class="small" x="30" y="101">metadata · partition 1 · user 'alice' … 'zoe' · 61 k distinct</text></g>
+<g class="fragment" data-fragment-index="2"><rect x="150" y="132" width="110" height="42" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="205" y="159">dictionary</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="270" y="132" width="110" height="42" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="325" y="159">inverted</text></g>
+<g class="fragment" data-fragment-index="4"><rect x="150" y="190" width="530" height="42" data-tone="wine" data-fill="none" data-stroke-width="2"/><rect x="258" y="190" width="8" height="42" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="302" y="190" width="8" height="42" data-tone="wine" data-fill="solid" data-stroke-width="1"/><rect x="566" y="190" width="8" height="42" data-tone="wine" data-fill="solid" data-stroke-width="1"/></g>
+<text class="title muted" x="760" y="20">ROWS SCANNED</text>
+<g><g class="fragment fade-out" data-fragment-index="4"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: #7D8E93">0</text></g></g>
+<g class="fragment" data-fragment-index="4"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: var(--accent-1)">3</text></g>
+<text class="small muted" x="762" y="108">of 2.1 M rows</text>
+<g class="fragment" data-fragment-index="1"><g class="fragment fade-out" data-fragment-index="2"><text class="small" x="760" y="150">Metadata: partition 1 can hold 'bob'</text></g></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><text class="small" x="760" y="150">Dictionary: 'bob' is id 12</text></g></g>
+<g class="fragment" data-fragment-index="3"><g class="fragment fade-out" data-fragment-index="4"><text class="small" x="760" y="150">Inverted index: exact rows, no scan</text></g></g>
+<g class="fragment" data-fragment-index="4"><text class="small" x="760" y="150">Forward index: read 3 rows of amount</text></g>
+<g class="fragment" data-fragment-index="2"><rect x="760" y="176" width="350" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.6"/>
+<text class="title ice" x="774" y="200">user DICTIONARY</text>
+<text class="small" x="774" y="230">'alice' → 11 · <tspan class="emph">'bob' → 12</tspan> · 'carol' → 13</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="760" y="262" width="350" height="70" data-tone="ice" data-fill="wash" data-stroke-width="1.6"/>
+<text class="title ice" x="774" y="286">user INVERTED · id 12</text>
+<text class="small" x="774" y="316">docs 20,412 · 20,981 · 61,003</text></g>
+<g class="fragment" data-fragment-index="4"><rect x="760" y="348" width="350" height="56" data-tone="wine" data-fill="wash" data-stroke-width="1.6"/>
+<text class="title wine" x="774" y="382">SUM(amount) = 3,140</text></g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Same query as the hard case, now on one Pinot segment</li>
+      <li>Metadata is in memory: the broker prunes by partition, no I/O</li>
+      <li>Dictionary: the same trick as Parquet</li>
+      <li>Inverted index: exact doc IDs, 0 rows scanned to filter</li>
+      <li>Forward index: 3 rows read (numEntriesScannedPostFilter = 3)</li>
+      <li>Min/max says which files might; an index says which rows</li>
+      <li>Illustrative numbers</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-split" data-badge="oss">
+  <h2>Segments live in the deep store</h2>
+  <ul class="points">
+    <li>Every segment is in the deep store</li>
+    <li>Servers keep a local copy</li>
+    <li class="fragment" data-fragment-index="1">Server dies? Download again</li>
+    <li class="fragment" data-fragment-index="2">Rebalance: move assignments</li>
+  </ul>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Every segment lives in the deep store; servers keep local copies; when a server dies or the cluster rebalances, servers download segments again">
+<rect x="10" y="380" width="620" height="120" data-tone="muted" data-fill="none" data-stroke-width="1.6" />
+<text class="title muted" x="26" y="402">DEEP STORE</text>
+<rect x="26" y="420" width="88" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="70.0" y="448.0">seg 0</text>
+<rect x="126" y="420" width="88" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="170.0" y="448.0">seg 1</text>
+<rect x="226" y="420" width="88" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="270.0" y="448.0">seg 2</text>
+<rect x="326" y="420" width="88" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="370.0" y="448.0">seg 3</text>
+<rect x="426" y="420" width="88" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="470.0" y="448.0">seg 4</text>
+<rect x="526" y="420" width="88" height="56" data-tone="muted" data-fill="wash" data-stroke-width="1.6" />
+<text class="small muted center" x="570.0" y="448.0">seg 5</text>
+<rect x="30" y="20" width="170" height="190" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="44" y="42">server</text>
+<rect x="44" y="60" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="115.0" y="79.0">seg 0</text>
+<rect x="44" y="106" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="115.0" y="125.0">seg 1</text>
+<rect x="44" y="152" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="115.0" y="171.0">seg 2</text>
+<rect x="240" y="20" width="170" height="190" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="254" y="42">server</text>
+<rect x="254" y="60" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="325.0" y="79.0">seg 2</text>
+<rect x="254" y="106" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="325.0" y="125.0">seg 3</text>
+<rect x="254" y="152" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="325.0" y="171.0">seg 4</text>
+<rect x="450" y="20" width="170" height="190" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text class="title ice" x="464" y="42">server</text>
+<rect x="464" y="60" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="535.0" y="79.0">seg 4</text>
+<rect x="464" y="106" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="535.0" y="125.0">seg 5</text>
+<rect x="464" y="152" width="142" height="38" data-tone="ice" data-fill="wash" data-stroke-width="1.6" />
+<text class="small ice center" x="535.0" y="171.0">seg 0</text>
+<line class="arrow" x1="115" y1="376" x2="115" y2="214" data-tone="muted" data-stroke-width="1.3" data-head="12"/>
+<line class="arrow" x1="325" y1="376" x2="325" y2="214" data-tone="muted" data-stroke-width="1.3" data-head="12"/>
+<line class="arrow" x1="535" y1="376" x2="535" y2="214" data-tone="muted" data-stroke-width="1.3" data-head="12"/>
+<g class="fragment " data-fragment-index="1">
+<line x1="240" y1="20" x2="410" y2="210" data-tone="wine" data-stroke-width="3"/>
+<line x1="410" y1="20" x2="240" y2="210" data-tone="wine" data-stroke-width="3"/>
+<path class="arrow" d="M 345 376 C 380 320 470 280 520 214" data-tone="wine" data-stroke-width="1.8"/>
+<text class="small wine" x="135" y="262">server dies?</text>
+<text class="small wine" x="135" y="290">others download</text>
+<text class="small wine" x="135" y="318">its segments</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<text class="small" x="614" y="402" style="text-anchor: end">rebalance: reassign, download</text>
+</g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Every segment is in S3, GCS or HDFS</li>
+      <li>The server copy is a cache: reassign and rebalance = download</li>
+      <li>Ask: why keep the local copy at all?</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-badge="startree">
+  <h2>Tiered storage</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 -28 1136 498" role="img" aria-label="Tiered storage: the segment stays in S3 and is never downloaded whole. The server keeps metadata, buffer offsets and pinned indexes on local disk, finds three doc IDs for 'bob' without touching S3, and fetches three 8 KB chunks of amount's forward index with ranged GETs: about 24 KB of a 500 MB segment.">
+<text class="small muted" x="0" y="-6">SELECT SUM(amount) FROM plays</text>
+<text class="small muted" x="0" y="18">WHERE user = 'bob'</text>
+<rect x="0" y="40" width="520" height="210" data-tone="wine" data-fill="none" data-stroke-width="1.8"/>
+<text class="title wine" x="16" y="62">SERVER · LOCAL DISK</text>
+<rect x="16" y="76" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="104">metadata + buffer offsets</text>
+<rect x="16" y="130" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="158">pinned: user dictionary + inverted</text>
+<rect x="16" y="184" width="488" height="44" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="260" y="212">query engine</text>
+<rect x="0" y="290" width="1136" height="150" data-tone="muted" data-fill="none" data-stroke-width="1.6"/>
+<text class="title muted" x="16" y="314">S3 · SEGMENT 4 · ~500 MB · NEVER DOWNLOADED WHOLE</text>
+<rect x="16" y="330" width="100" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="66" y="366">user dict</text>
+<rect x="116" y="330" width="110" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="171" y="366">user inverted</text>
+<rect x="226" y="330" width="150" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="301" y="366">user fwd</text>
+<rect x="376" y="330" width="200" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="476" y="366">ts fwd</text>
+<rect x="576" y="330" width="100" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="626" y="366">ts range</text>
+<rect x="676" y="330" width="300" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="826" y="366">amount fwd</text>
+<rect x="976" y="330" width="120" height="60" data-tone="ink" data-fill="none" data-stroke-width="1.2"/>
+<text class="small muted center" x="1036" y="366">…</text>
+<g class="fragment" data-fragment-index="1"><rect x="16" y="76" width="488" height="44" data-tone="amber" data-fill="wash" data-stroke-width="2"/>
+<text class="small center" x="260" y="104">metadata + buffer offsets</text></g>
+<g class="fragment" data-fragment-index="2"><rect x="16" y="130" width="488" height="44" data-tone="ice" data-fill="wash" data-stroke-width="2.2"/>
+<text class="small ice center" x="260" y="158">pinned: user dictionary + inverted</text></g>
+<g class="fragment" data-fragment-index="3"><rect x="700" y="330" width="10" height="60" data-tone="wine" data-fill="solid" data-stroke-width="1"/><line class="arrow" x1="522" y1="210" x2="705" y2="326" data-tone="wine" data-stroke-width="1.6" data-head="12"/><rect x="716" y="330" width="10" height="60" data-tone="wine" data-fill="solid" data-stroke-width="1"/><line class="arrow" x1="522" y1="210" x2="721" y2="326" data-tone="wine" data-stroke-width="1.6" data-head="12"/><rect x="930" y="330" width="10" height="60" data-tone="wine" data-fill="solid" data-stroke-width="1"/><line class="arrow" x1="522" y1="210" x2="935" y2="326" data-tone="wine" data-stroke-width="1.6" data-head="12"/></g>
+<g class="fragment" data-fragment-index="4"><rect x="231" y="335" width="140" height="50" data-tone="wine" data-fill="none" data-stroke-width="2"/><rect x="381" y="335" width="190" height="50" data-tone="wine" data-fill="none" data-stroke-width="2"/><rect x="681" y="335" width="290" height="50" data-tone="wine" data-fill="none" data-stroke-width="2"/><text class="small wine center" x="568" y="424">what if the forward index were someone else's Parquet?</text></g>
+<text class="title muted" x="760" y="20">BYTES FROM S3</text>
+<g><g class="fragment fade-out" data-fragment-index="3"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: #7D8E93">0</text></g></g>
+<g class="fragment" data-fragment-index="3"><text x="760" y="82" style="font-family: var(--font-title); font-size: 56px; font-weight: 700; fill: var(--accent-1)">~24 KB</text></g>
+<text class="small muted" x="762" y="108">of a ~500 MB segment</text>
+<g class="fragment" data-fragment-index="1"><g class="fragment fade-out" data-fragment-index="2"><text class="small" x="760" y="150">Metadata and offsets: local</text></g></g>
+<g class="fragment" data-fragment-index="2"><g class="fragment fade-out" data-fragment-index="3"><text class="small" x="760" y="150">Pinned indexes: 'bob' → 3 doc IDs</text></g></g>
+<g class="fragment" data-fragment-index="3"><g class="fragment fade-out" data-fragment-index="4"><text class="small" x="760" y="150">3 ranged GETs, one 8 KB chunk each</text></g></g>
+<g class="fragment" data-fragment-index="4"><text class="small" x="760" y="150">Next: someone else's Parquet</text></g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>StarTree only: the segment stays in S3, one copy, uncompressed</li>
+      <li>Not lazy loading: never downloads the whole segment</li>
+      <li>Local: metadata, buffer offsets, pinned indexes (preload.index.keys)</li>
+      <li>Raw forward index: 1,000 docs per chunk = 8 KB for a LONG; 3 GETs ≈ 24 KB</li>
+      <li>Less disk, a few ms more per GET</li>
+      <li>Bridge: an External Table segment is a tiered segment whose forward index is a Parquet file</li>
+      <li>Illustrative numbers</li>
+    </ul>
   </aside>
 </section>

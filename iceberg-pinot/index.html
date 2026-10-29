@@ -13,18 +13,28 @@
   <script src="template/vendor/reveal/reveal.js"></script>
   <script src="template/vendor/reveal/plugin/notes/notes.js"></script>
   <script>
-    // Chapter order and footer labels. Target times are for the 50-minute conference slot.
+    // Chapter order, footer labels and target minutes (50-minute slot). The loader prints each slide's
+    // time slot at the top of its speaker notes.
     window.DECK = {
       chapters: [
-        { file: "chapters/00-opening.html",  label: "Opening" },           // 1 min
-        { file: "chapters/01-two-lines.html", label: "Two lines" },        // 3 min
-        { file: "chapters/02-iceberg.html",  label: "Iceberg" },           // 15 min
-        { file: "chapters/03-pinot.html",    label: "Pinot" },             // 11 min
-        { file: "chapters/04-together.html", label: "Iceberg ♥ Pinot" },   // 18 min
-        { file: "chapters/05-closing.html",  label: "Closing" },           // 1 min + Q&A
+        { file: "chapters/00-opening.html",  label: "Opening", minutes: 1 },
+        { file: "chapters/02-iceberg.html",  label: "Iceberg", minutes: 13 },
+        { file: "chapters/03-pinot.html",    label: "Pinot", minutes: 11 },
+        { file: "chapters/04-together.html", label: "Iceberg ♥ Pinot", minutes: 12 },
+        { file: "chapters/05-wrapping-up.html", label: "Wrapping up", minutes: 9 },
+        { file: "chapters/06-closing.html",  label: "Closing", minutes: 1 },    // + Q&A
       ],
+      // Corner badge: is the feature on this slide in Apache Pinot or only in StarTree?
+      badges: {
+        oss: { label: "Apache Pinot · OSS", tone: "muted" },
+        startree: { label: "StarTree only", tone: "wine" },
+      },
     };
   </script>
+  <script src="template/vendor/rough/rough.js"></script>
+  <script src="template/sketch.js"></script>
+  <script src="template/vendor/qrcode/qrcode.js"></script>
+  <script src="template/qr.js"></script>
   <script src="template/loader.js"></script>
 </body>
 </html>

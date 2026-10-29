@@ -1,0 +1,336 @@
+<section class="layout-chapter night">
+  <img class="art" src="assets/startree/iceberg-startree-art.png" alt="">
+  <div class="chapter">
+    <span class="num">CHAPTER 4</span>
+    <span class="name">Wrapping up</span>
+    <span class="tagline">When it fits, and how to use it well</span>
+  </div>
+</section>
+
+<section class="layout-full">
+  <h2>How engines read Iceberg, completed</h2>
+  <table class="grid dense">
+    <thead><tr><th>Engine</th><th>Local copy</th><th>Own indexes on remote data</th><th>Remote scan + cache</th></tr></thead>
+    <tbody>
+      <tr class="highlight good"><td>StarTree Pinot</td><td class="yes">✓ <small>native</small></td><td class="yes">✓ <small>External Tables + indexes</small></td><td class="yes">✓ <small>External Tables</small></td></tr>
+      <tr><td>Snowflake</td><td class="yes">✓</td><td class="yes">✓ <small>search optimization*</small></td><td class="yes">✓</td></tr>
+      <tr><td>Starburst (Warp Speed)</td><td class="no">—</td><td class="yes">✓ <small>index layer</small></td><td class="yes">✓</td></tr>
+      <tr><td>BigQuery</td><td class="yes">✓</td><td class="unk">? <small>external: ✗</small></td><td class="yes">✓</td></tr>
+      <tr><td>Databricks</td><td class="yes">✓</td><td class="unk">? <small>Reyden undisclosed</small></td><td class="yes">✓</td></tr>
+      <tr><td>Trino / Athena / Spark</td><td class="no">—</td><td class="no">✗</td><td class="yes">✓</td></tr>
+      <tr><td>DuckDB / Dremio</td><td class="yes">✓</td><td class="no">✗</td><td class="yes">✓</td></tr>
+      <tr><td>StarRocks / Doris / ClickHouse</td><td class="yes">✓</td><td class="no">✗</td><td class="yes">✓</td></tr>
+    </tbody>
+  </table>
+  <p class="footnote">* Snowflake-managed Iceberg tables confirmed; externally managed not documented. Official docs, checked 2026-10-01.</p>
+  <a class="qr at-right" href="https://engineering.atspotify.com/2026/7/indexing-the-data-lake-for-online-point-queries" data-logo="spotify" data-label="Spotify Engineering · 2026"></a>
+  <aside class="notes">
+    <ul>
+      <li>Not the only one: Snowflake Search Optimization, Starburst Warp Speed</li>
+      <li>Spotify QR: the same idea, built independently</li>
+      <li>The industry: keep the data in the lake, index on the side</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-badge="startree" data-visibility="hidden" data-superseded>
+  <h2>You cannot beat physics</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 1136 470" role="img" aria-label="A spectrum from local copy to remote scan. Left: more storage, faster. Right: a single copy, slower. Native tables of any engine and Pinot tiered storage sit on the left, Iceberg read by any engine on the right. Indexes move an External Table from the Iceberg end towards tiered storage while keeping a single copy">
+<line x1="60" y1="230" x2="1076" y2="230" data-tone="ink" data-stroke-width="2.4"/>
+<line class="arrow" x1="568" y1="230" x2="60" y2="230" data-tone="ink" data-stroke-width="2.4" data-head="14"/>
+<line class="arrow" x1="568" y1="230" x2="1076" y2="230" data-tone="ink" data-stroke-width="2.4" data-head="14"/>
+<text class="title" x="60" y="206">local copy</text>
+<text class="title" x="1076" y="206" style="text-anchor: end">remote scan</text>
+<text class="small amber" x="60" y="150">+ storage, + sync</text>
+<text class="small amber" x="1076" y="150" style="text-anchor: end">single copy</text>
+<text class="small amber" x="60" y="330">faster</text>
+<text class="small amber" x="1076" y="330" style="text-anchor: end">slower</text>
+<circle cx="190" cy="230" r="10" data-tone="muted" data-fill="solid" data-stroke-width="2"/>
+<text class="small muted center" x="190" y="270">native tables</text>
+<text class="small muted center" x="190" y="294">any engine</text>
+<circle cx="380" cy="230" r="10" data-tone="wine" data-fill="solid" data-stroke-width="2"/>
+<text class="small wine center" x="380" y="270">tiered storage</text>
+<circle cx="920" cy="230" r="10" data-tone="muted" data-fill="solid" data-stroke-width="2"/>
+<text class="small muted center" x="920" y="270">Iceberg · any engine</text>
+<g class="fragment" data-fragment-index="1">
+<path class="arrow" d="M 910 216 C 850 120 650 120 578 214" data-tone="ice" data-stroke-width="2.2"/>
+<text class="small ice center" x="740" y="116">indexes: fewer bytes, still a single copy</text>
+<circle cx="570" cy="230" r="10" data-tone="ice" data-fill="solid" data-stroke-width="2"/>
+<text class="small ice center" x="570" y="270">External Tables</text>
+<text class="small ice center" x="570" y="294">+ indexes</text>
+</g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Superseded by the two-axis version</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-badge="startree">
+  <h2>You cannot beat physics</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 1136 470" role="img" aria-label="Two axes: horizontal from a local copy with more storage and sync (left) to a remote scan of a single copy (right); vertical query time, up is slower. Native tables are fastest, Pinot tiered storage slower, Iceberg read by any engine slowest. An External Table with indexes is almost as fast as tiered storage while staying close to a single copy">
+<line class="arrow" x1="150" y1="410" x2="1100" y2="410" data-tone="ink" data-stroke-width="2.2" data-head="12"/>
+<line class="arrow" x1="150" y1="410" x2="150" y2="30" data-tone="ink" data-stroke-width="2.2" data-head="12"/>
+<text class="title muted" x="134" y="26" style="text-anchor: end">QUERY TIME</text>
+<text class="small amber" x="134" y="66" style="text-anchor: end">slower</text>
+<text class="small amber" x="134" y="402" style="text-anchor: end">faster</text>
+<text class="title" x="156" y="444">local copy</text>
+<text class="small amber" x="156" y="468">+ storage, + sync</text>
+<text class="title" x="1100" y="444" style="text-anchor: end">remote scan</text>
+<text class="small amber" x="1100" y="468" style="text-anchor: end">single copy</text>
+<path d="M 230 374 L 470 266 L 960 79" data-tone="muted" data-fill="none" data-stroke-width="1.4" style="stroke-dasharray: 6 6"/>
+<circle cx="230" cy="374" r="11" data-tone="muted" data-fill="solid"/>
+<text class="small muted" x="250" y="379">native tables · any engine</text>
+<circle cx="470" cy="266" r="11" data-tone="wine" data-fill="solid"/>
+<text class="small wine" x="490" y="271">Pinot tiered storage</text>
+<circle cx="960" cy="79" r="11" data-tone="muted" data-fill="solid"/>
+<text class="small muted" x="940" y="84" style="text-anchor: end">Iceberg · any engine</text>
+<g class="fragment" data-fragment-index="1">
+<path class="arrow" d="M 960 93 C 970 176 900 253 882 265" data-tone="ice" data-stroke-width="2.2"/>
+<circle cx="870" cy="273" r="11" data-tone="ice" data-fill="solid"/>
+<text class="small ice" x="850" y="307" style="text-anchor: end">External Tables + indexes</text>
+<text class="small ice" x="850" y="333" style="text-anchor: end">much faster, still (almost) one copy</text>
+</g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>The less you copy, the slower the query: one line</li>
+      <li>External Tables + indexes: much faster, only the indexes are local</li>
+      <li>Every byte a query needs still has to move</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-badge="startree">
+  <h2>You cannot always use indexes</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 1136 470" role="img" aria-label="UML activity diagram. A query on an External Table: if indexes exist and the query can use them, Pinot reads only the pages the answer needs; if there are no indexes, or the query cannot use them, it falls back to an expensive IO scan">
+<circle cx="30" cy="130" r="13" data-tone="ink" data-fill="solid" data-stroke-width="1"/>
+<line class="arrow" x1="44" y1="130" x2="86" y2="130" data-tone="ink" data-stroke-width="1.6" data-head="10"/>
+<path d="M 106 95 H 344 A 16 16 0 0 1 360 111 V 149 A 16 16 0 0 1 344 165 H 106 A 16 16 0 0 1 90 149 V 111 A 16 16 0 0 1 106 95 Z" data-tone="ink" data-fill="wash" data-stroke-width="1.6"/>
+<text class="center" x="225" y="137">Query on an External Table</text>
+<line class="arrow" x1="360" y1="130" x2="422" y2="130" data-tone="ink" data-stroke-width="1.6" data-head="10"/>
+<path d="M 450 104 L 476 130 L 450 156 L 424 130 Z" data-tone="ink" data-fill="wash" data-stroke-width="1.6"/>
+<text class="small muted center" x="450" y="90">indexes?</text>
+<g class="fragment" data-fragment-index="31">
+<line class="arrow" x1="476" y1="130" x2="642" y2="130" data-tone="ice" data-stroke-width="1.8" data-head="10"/>
+<text class="small ice center" x="560" y="118">[created]</text>
+<path d="M 670 104 L 696 130 L 670 156 L 644 130 Z" data-tone="ink" data-fill="wash" data-stroke-width="1.6"/>
+<text class="small muted center" x="670" y="90">usable?</text>
+</g>
+<g class="fragment" data-fragment-index="32">
+<polyline class="arrow" points="450,156 450,350 532,350" data-tone="muted" data-stroke-width="1.8" data-head="10"/>
+<text class="small muted" x="460" y="250">[none]</text>
+<polyline class="arrow" points="670,156 670,350 588,350" data-tone="muted" data-stroke-width="1.8" data-head="10"/>
+<text class="small muted" x="680" y="250">[query cannot use them]</text>
+<path d="M 560 324 L 586 350 L 560 376 L 534 350 Z" data-tone="muted" data-fill="none" data-stroke-width="1.6"/>
+<line class="arrow" x1="560" y1="376" x2="560" y2="402" data-tone="muted" data-stroke-width="1.6" data-head="10"/>
+<path d="M 446 404 H 674 A 16 16 0 0 1 690 420 V 444 A 16 16 0 0 1 674 460 H 446 A 16 16 0 0 1 430 444 V 420 A 16 16 0 0 1 446 404 Z" data-tone="muted" data-fill="wash" data-stroke-width="1.6"/>
+<text class="center" x="560" y="438">Expensive IO scan</text>
+<line class="arrow" x1="690" y1="432" x2="800" y2="432" data-tone="muted" data-stroke-width="1.6" data-head="10"/>
+<circle cx="820" cy="432" r="17" data-tone="muted" data-fill="none" data-stroke-width="2"/>
+<circle cx="820" cy="432" r="9" data-tone="muted" data-fill="solid" data-stroke-width="1"/>
+</g>
+<g class="fragment" data-fragment-index="33">
+<line class="arrow" x1="696" y1="130" x2="766" y2="130" data-tone="ice" data-stroke-width="1.8" data-head="10"/>
+<text class="small ice center" x="730" y="118">[yes]</text>
+<path d="M 786 90 H 1054 A 16 16 0 0 1 1070 106 V 154 A 16 16 0 0 1 1054 170 H 786 A 16 16 0 0 1 770 154 V 106 A 16 16 0 0 1 786 90 Z" data-tone="ice" data-fill="wash" data-stroke-width="1.8"/>
+<text class="center" x="920" y="124">Read only the pages</text>
+<text class="center" x="920" y="150">the answer needs</text>
+<line class="arrow" x1="1070" y1="130" x2="1100" y2="130" data-tone="ice" data-stroke-width="1.6" data-head="10"/>
+<circle cx="1116" cy="130" r="17" data-tone="ice" data-fill="none" data-stroke-width="2"/>
+<circle cx="1116" cy="130" r="9" data-tone="ice" data-fill="solid" data-stroke-width="1"/>
+</g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Two questions: indexes created? Can this query use them?</li>
+      <li>Any "no": a scan like any engine</li>
+      <li>Indexes are optional</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-split">
+  <h2>Write Iceberg for its readers</h2>
+  <ul class="points">
+    <li>Sort by the filter key</li>
+    <li>Sane file and row-group sizes</li>
+    <li>v3 deletion vectors</li>
+    <li>Compact on a schedule</li>
+  </ul>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Sorting files by the filter key turns wide min/max ranges into tight ones, so one file instead of five is read">
+<text class="title amber" x="0" y="20">UNSORTED</text>
+<text class="title ice" x="330" y="20">SORTED BY user</text>
+<text class="small" x="0" y="56">file 1</text>
+<rect x="110.06" y="44" width="196.21999999999997" height="24" data-tone="amber" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="330" y="56">file 1</text>
+<rect x="420.0" y="44" width="38.0" height="24" data-tone="ice" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="0" y="96">file 2</text>
+<rect x="110.24" y="84" width="199.29999999999995" height="24" data-tone="amber" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="330" y="96">file 2</text>
+<rect x="460.0" y="84" width="38.0" height="24" data-tone="ice" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="0" y="136">file 3</text>
+<rect x="110.14" y="124" width="199.66000000000003" height="24" data-tone="amber" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="330" y="136">file 3</text>
+<rect x="500.0" y="124" width="38.0" height="24" data-tone="ice" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="0" y="176">file 4</text>
+<rect x="110.02" y="164" width="199.14" height="24" data-tone="amber" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="330" y="176">file 4</text>
+<rect x="540.0" y="164" width="38.0" height="24" data-tone="ice" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="0" y="216">file 5</text>
+<rect x="110.5" y="204" width="196.91999999999996" height="24" data-tone="amber" data-fill="wash" data-stroke-width="1.3"/>
+<text class="small" x="330" y="216">file 5</text>
+<rect x="580.0" y="204" width="38.0" height="24" data-tone="ice" data-fill="wash" data-stroke-width="1.3"/>
+<line x1="194.34" y1="36" x2="194.34" y2="250" data-tone="wine" data-stroke-width="2"/>
+<line x1="504.34000000000003" y1="36" x2="504.34000000000003" y2="250" data-tone="wine" data-stroke-width="2"/>
+<text class="small amber center" x="160" y="280">read 5 files</text>
+<text class="small ice center" x="500" y="280">read 1 file</text>
+<rect x="0" y="330" width="640" height="170" data-tone="ink" data-fill="none" data-stroke-width="1.6" />
+<text class="small" x="20" y="360">also: target file size · row-group size</text>
+<text class="small" x="20" y="396">prefer v3 deletion vectors</text>
+<text class="small" x="20" y="432">compact on a schedule</text>
+<text class="small muted" x="20" y="468">helps every engine, not only Pinot</text>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Sort or cluster by the filter key</li>
+      <li>Deletion vector (v3) = per-file bitmap of deleted rows</li>
+      <li>Pinot applies only v3 deletion vectors</li>
+      <li>Comcast: −35–40% scanned data by sorting on device ID</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-full" data-weight="3">
+  <h2>Two timelines that meet</h2>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 1136 520" role="img" aria-label="Two timelines: LinkedIn's Pinot from 2013 and the data lake's Iceberg from 2017 converge in 2025 in StarTree External Tables">
+<text class="title muted center" x="60" y="500">2006</text>
+<line x1="60" y1="478" x2="60" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="152" y="500">2008</text>
+<line x1="152" y1="478" x2="152" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="244" y="500">2010</text>
+<line x1="244" y1="478" x2="244" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="336" y="500">2012</text>
+<line x1="336" y1="478" x2="336" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="428" y="500">2014</text>
+<line x1="428" y1="478" x2="428" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="520" y="500">2016</text>
+<line x1="520" y1="478" x2="520" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="612" y="500">2018</text>
+<line x1="612" y1="478" x2="612" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="704" y="500">2020</text>
+<line x1="704" y1="478" x2="704" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="796" y="500">2022</text>
+<line x1="796" y1="478" x2="796" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="888" y="500">2024</text>
+<line x1="888" y1="478" x2="888" y2="486" data-tone="muted" data-stroke-width="1"/>
+<text class="title muted center" x="980" y="500">2026</text>
+<line x1="980" y1="478" x2="980" y2="486" data-tone="muted" data-stroke-width="1"/>
+<line x1="60" y1="482" x2="980" y2="482" data-tone="muted" data-stroke-width="1"/>
+<g><line x1="290" y1="170" x2="897.2000000000021" y2="170" data-tone="wine" data-stroke-width="3"/>
+<text class="title wine" x="0" y="100">LINKEDIN → APACHE PINOT</text>
+<path d="M 290 150 C 293 158 297 163 297 170 A 7 7 0 1 1 283 170 C 283 163 287 158 290 150 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="290" y="134">Kafka</text>
+<path d="M 382 190 C 385 182 389 177 389 170 A 7 7 0 1 0 375 170 C 375 177 379 182 382 190 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="382" y="206">Pinot · WVMP</text>
+<path d="M 474 150 C 477 158 481 163 481 170 A 7 7 0 1 1 467 170 C 467 163 471 158 474 150 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="474" y="134">open source</text>
+<path d="M 506.2000000000021 190 C 509.2000000000021 182 513.2000000000021 177 513.2000000000021 170 A 7 7 0 1 0 499.2000000000021 170 C 499.2000000000021 177 503.2000000000021 182 506.2000000000021 190 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="506.2000000000021" y="206">Uber joins</text>
+<path d="M 612 150 C 615 158 619 163 619 170 A 7 7 0 1 1 605 170 C 605 163 609 158 612 150 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="612" y="134">StarTree</text>
+<path d="M 648.7999999999979 190 C 651.7999999999979 182 655.7999999999979 177 655.7999999999979 170 A 7 7 0 1 0 641.7999999999979 170 C 641.7999999999979 177 645.7999999999979 182 648.7999999999979 190 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="648.7999999999979" y="206">Apache incubator</text>
+<path d="M 740.7999999999979 150 C 743.7999999999979 158 747.7999999999979 163 747.7999999999979 170 A 7 7 0 1 1 733.7999999999979 170 C 733.7999999999979 163 737.7999999999979 158 740.7999999999979 150 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="740.7999999999979" y="134">upserts (Uber)</text>
+<path d="M 777.5999999999958 190 C 780.5999999999958 182 784.5999999999958 177 784.5999999999958 170 A 7 7 0 1 0 770.5999999999958 170 C 770.5999999999958 177 774.5999999999958 182 777.5999999999958 190 Z" data-tone="wine" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="777.5999999999958" y="206">top-level</text>
+</g>
+<g><line x1="60" y1="350" x2="897.2000000000021" y2="350" data-tone="ice" data-stroke-width="3"/>
+<text class="title ice" x="0" y="280">THE DATA LAKE → APACHE ICEBERG</text>
+<path d="M 60 370 C 63 362 67 357 67 350 A 7 7 0 1 0 53 350 C 53 357 57 362 60 370 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="60" y="386">Hadoop</text>
+<path d="M 244 330 C 247 338 251 343 251 350 A 7 7 0 1 1 237 350 C 237 343 241 338 244 330 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="244" y="314">Hive</text>
+<path d="M 382 370 C 385 362 389 357 389 350 A 7 7 0 1 0 375 350 C 375 357 379 362 382 370 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="382" y="386">Parquet</text>
+<path d="M 566 330 C 569 338 573 343 573 350 A 7 7 0 1 1 559 350 C 559 343 563 338 566 330 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="566" y="314">Iceberg · Netflix</text>
+<path d="M 635.0 370 C 638.0 362 642.0 357 642.0 350 A 7 7 0 1 0 628.0 350 C 628.0 357 632.0 362 635.0 370 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="635.0" y="386">Apache</text>
+<path d="M 704 330 C 707 338 711 343 711 350 A 7 7 0 1 1 697 350 C 697 343 701 338 704 330 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="704" y="314">top-level</text>
+<path d="M 763.7999999999979 370 C 766.7999999999979 362 770.7999999999979 357 770.7999999999979 350 A 7 7 0 1 0 756.7999999999979 350 C 756.7999999999979 357 760.7999999999979 362 763.7999999999979 370 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="763.7999999999979" y="386">v2: deletes</text>
+<path d="M 897.2000000000021 330 C 900.2000000000021 338 904.2000000000021 343 904.2000000000021 350 A 7 7 0 1 1 890.2000000000021 350 C 890.2000000000021 343 894.2000000000021 338 897.2000000000021 330 Z" data-tone="ice" data-fill="solid" data-stroke-width="1.2" data-roughness="0.6"/>
+<text class="small center" x="897.2000000000021" y="314">v3: DVs</text>
+</g>
+<g><path class="arrow" d="M 897.2000000000021 170 C 934 170 934 230 961.5999999999958 248" data-tone="wine" data-stroke-width="3"/>
+<path class="arrow" d="M 897.2000000000021 350 C 934 350 934 292 961.5999999999958 276" data-tone="ice" data-stroke-width="3"/>
+<rect x="961.5999999999958" y="236" width="150" height="52" data-tone="ink" data-fill="wash" data-stroke-width="1.6" />
+<text class="small center" x="1036.5999999999958" y="262.0">External Tables</text>
+<text class="title muted center" x="1036.5999999999958" y="310">2025</text>
+</g>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Draw the Pinot line first: older, not built for Iceberg</li>
+      <li>Pinot: LinkedIn 2013, open source 2015, Uber 2015, StarTree 2018, Apache top-level 2021</li>
+      <li>Both lines meet at External Tables (2025)</li>
+      <li>Close here, then take questions on the Links slide</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-split" data-badge="startree" data-visibility="hidden">
+  <h2>Configure Pinot for your queries</h2>
+  <ul class="points">
+    <li>Index what you filter on</li>
+    <li>Star-tree for dashboards</li>
+    <li>Size the cache</li>
+    <li>Same region as the bucket</li>
+  </ul>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Checklist: index what you filter on, star-tree for dashboards, size the cache, keep the cluster in the bucket's region">
+<rect x="0" y="10" width="640" height="490" data-tone="ink" data-fill="none" data-stroke-width="1.6" />
+<rect x="24" y="40" width="36" height="36" data-tone="ice" data-fill="none" data-stroke-width="1.8" />
+<line x1="30" y1="58" x2="40" y2="70" data-tone="ice" data-stroke-width="2.4"/>
+<line x1="40" y1="70" x2="58" y2="44" data-tone="ice" data-stroke-width="2.4"/>
+<text class="" x="80" y="54">Index what you filter on</text>
+<text class="small amber" x="80" y="90">one read per column per segment</text>
+<rect x="24" y="152" width="36" height="36" data-tone="ice" data-fill="none" data-stroke-width="1.8" />
+<line x1="30" y1="170" x2="40" y2="182" data-tone="ice" data-stroke-width="2.4"/>
+<line x1="40" y1="182" x2="58" y2="156" data-tone="ice" data-stroke-width="2.4"/>
+<text class="" x="80" y="166">Star-tree for dashboards</text>
+<text class="small amber" x="80" y="202">answers without rows</text>
+<rect x="24" y="264" width="36" height="36" data-tone="ice" data-fill="none" data-stroke-width="1.8" />
+<line x1="30" y1="282" x2="40" y2="294" data-tone="ice" data-stroke-width="2.4"/>
+<line x1="40" y1="294" x2="58" y2="268" data-tone="ice" data-stroke-width="2.4"/>
+<text class="" x="80" y="278">Size the cache</text>
+<text class="small amber" x="80" y="314">pin indexes first</text>
+<rect x="24" y="376" width="36" height="36" data-tone="ice" data-fill="none" data-stroke-width="1.8" />
+<line x1="30" y1="394" x2="40" y2="406" data-tone="ice" data-stroke-width="2.4"/>
+<line x1="40" y1="406" x2="58" y2="380" data-tone="ice" data-stroke-width="2.4"/>
+<text class="" x="80" y="390">Same region as the bucket</text>
+<text class="small amber" x="80" y="426">ranged GETs are region-strict</text>
+</svg>
+</figure>
+  <aside class="notes">
+    <ul>
+      <li>Each index: one read of its column per segment + storage on S3</li>
+      <li>Keep data and cluster in the same region: ranged reads are region-strict</li>
+    </ul>
+  </aside>
+</section>
+

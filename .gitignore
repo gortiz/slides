@@ -1,0 +1,3 @@
+# admin token for the live poll server: never commit it
+poll-token.js
+.DS_Store

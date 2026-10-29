@@ -1,39 +1,47 @@
-<section class="layout-cover">
+<section class="layout-cover night">
+  <img class="art" src="assets/startree/iceberg-startree-art.png" alt="">
   <div class="cover">
     <h1>Your Iceberg Table Is Already a Pinot Table</h1>
     <p class="deck">A Netflix format, a LinkedIn engine, and why they fit</p>
     <p class="who">Gonzalo Ortiz · Apache Pinot PMC · StarTree</p>
   </div>
-  <aside class="notes">Introduce yourself in one sentence. Do not explain the title yet.</aside>
+  <aside class="notes">
+    <ul>
+      <li>Introduce yourself in one sentence</li>
+      <li>Do not explain the title yet</li>
+    </ul>
+  </aside>
 </section>
 
-<section class="layout-split">
+<section class="layout-full">
   <h2>Quick show of hands</h2>
-  <ul class="points">
-    <li>Written a Parquet file?</li>
-    <li class="fragment">Know what is in its footer?</li>
-    <li class="fragment">Used Iceberg in production?</li>
-    <li class="fragment">Heard of Apache Pinot?</li>
-  </ul>
-  <figure class="diagram todo">hand-drawn raised hands, one per question</figure>
+  <figure class="diagram">
+<svg class="sketch" viewBox="0 0 640 520" role="img" aria-label="Four show-of-hands questions: written a Parquet file, know what is in its footer, used Iceberg in production, heard of Apache Pinot">
+<rect x="20" y="20" width="600" height="96" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text x="60" y="70" style="font-size: 48px; dominant-baseline: middle">✋🏼</text>
+<text class="" x="140" y="68">Written a Parquet file?</text>
+<g class="fragment " data-fragment-index="1">
+<rect x="20" y="140" width="600" height="96" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text x="60" y="190" style="font-size: 48px; dominant-baseline: middle">✋🏿</text>
+<text class="" x="140" y="188">Know what is in its footer?</text>
+</g>
+<g class="fragment " data-fragment-index="2">
+<rect x="20" y="260" width="600" height="96" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text x="60" y="310" style="font-size: 48px; dominant-baseline: middle">✋🏻</text>
+<text class="" x="140" y="308">Used Iceberg in production?</text>
+</g>
+<g class="fragment " data-fragment-index="3">
+<rect x="20" y="380" width="600" height="96" data-tone="ice" data-fill="none" data-stroke-width="1.6" />
+<text x="60" y="430" style="font-size: 48px; dominant-baseline: middle">✋🏾</text>
+<text class="" x="140" y="428">Heard of Apache Pinot?</text>
+</g>
+</svg>
+</figure>
   <aside class="notes">
-    Calibrate depth from the answers. If most hands stay up for the footer question, go faster
-    through Parquet 101. Expect almost no hands for Pinot; say "that is fine, nobody needs to".
+    <ul>
+      <li>Many hands on the footer: go fast through Parquet 101</li>
+      <li>No hands for Pinot: "that is fine"</li>
+    </ul>
   </aside>
 </section>
 
-<section class="layout-split">
-  <h2>Our table for today</h2>
-  <ul class="points">
-    <li><code>plays</code>: one row per song played</li>
-    <li>Billions of rows per day</li>
-    <li>Written by Spark, every hour</li>
-    <li class="fragment">Question: <em>"your week in music"</em> for every user</li>
-  </ul>
-  <figure class="diagram todo">table card: plays(user_id, track_id, country, ts, ms_played) with a few sample rows</figure>
-  <aside class="notes">
-    This table follows us through the whole talk. Chapter 1 stores it, chapter 2 serves it,
-    chapter 3 does both without a copy. The last bullet is the product requirement that makes it
-    hard: every user opens the app and expects their own numbers in milliseconds.
-  </aside>
-</section>
