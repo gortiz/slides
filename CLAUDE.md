@@ -15,7 +15,7 @@ leave them as they are unless asked.
 | `<talk>/template` | Symlink to `../_reveal-template`. |
 | `<talk>/assets/` | Images the slides use. |
 | `<talk>/research/` | Notes, sources and drafts. Never published. |
-| `serve.sh` | `./serve.sh <talk> [port]` serves one talk at http://127.0.0.1:8000/. |
+| `serve.sh` | `./serve.sh <talk> [port]` serves one talk at http://127.0.0.1:8000/, with caching off so edits always show. |
 
 ## Start a new talk
 
@@ -67,22 +67,30 @@ edit them.
 
 ## Publish
 
-Published talks live in the public GitHub Pages repo `gortiz/gortiz.github.io`, served at
-https://gortizja.com. The site is plain static files (`.nojekyll`, no build step):
+Published talks live in the public repo `gortiz/gortiz.github.io`, served at https://gortizja.com.
+It is an Astro site: a GitHub Actions workflow builds it and deploys it to GitHub Pages on every
+push to `master`. Its own `README.md` describes the layout. Decks are static files under `public/`:
 
 | Path in the site repo | Content |
 |---|---|
-| `talks/<slug>/index.html` | `build-single.py … --public` output |
-| `talks/<slug>/<slug>.pdf` | `export-pdf.sh` output |
-| `index.html`, `talks/index.html` | Lists of talks: add an entry for each new talk |
+| `public/talks/<slug>/index.html` | `build-single.py … --public` output |
+| `public/talks/<slug>/<slug>.pdf` | `export-pdf.sh` output |
+| `public/talks/<slug>/extended/index.html` | `build-single.py … --public --extended`: hidden slides included |
+| `public/talks/<slug>/extended/<slug>-extended.pdf` | PDF of the extended deck (DeckTape on its `file://` URL) |
+| `src/data/talks.ts` | List of talks with slides: add an entry for each new talk |
 
 ```sh
 cd <slides-repo>/<slug>
-./template/build-single.py <site-repo>/talks/<slug>/index.html --public
-./template/export-pdf.sh <site-repo>/talks/<slug>/<slug>.pdf
+SITE=<site-repo>/public/talks/<slug>
+./template/build-single.py $SITE/index.html --public
+./template/build-single.py $SITE/extended/index.html --public --extended
+./template/export-pdf.sh $SITE/<slug>.pdf
+PUPPETEER_SKIP_DOWNLOAD=1 npx -y decktape@3 reveal --chrome-path "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --size 1280x720 --pause 400 "file://$SITE/extended/index.html?all-fragments" $SITE/extended/<slug>-extended.pdf
 ```
 
-Then commit and push in the site repo, and check that the URLs answer 200.
+Then commit and push in the site repo, wait for the Deploy workflow, and check that the URLs
+answer 200.
 
 - Always publish with `--public`: speaker notes are private.
 - Everything in the site repo is public, including any notes or config files committed there.

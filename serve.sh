@@ -30,4 +30,13 @@ fi
 
 echo "Serving $TALK on http://127.0.0.1:$PORT/  (Ctrl+C to stop)"
 cd "$ROOT/$TALK"
-exec python3 -m http.server "$PORT" --bind 127.0.0.1
+# Like `python3 -m http.server`, but with Cache-Control: no-store, so a browser never shows a stale
+# deck or chapter after an edit (the speaker view loads the deck again in its own iframes).
+exec python3 -c '
+import http.server, sys
+class NoCache(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+http.server.ThreadingHTTPServer(("127.0.0.1", int(sys.argv[1])), NoCache).serve_forever()
+' "$PORT"
