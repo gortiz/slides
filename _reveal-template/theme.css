@@ -11,13 +11,13 @@
 
 :root {
   /* palette */
-  --ground: #F7F8F8;
+  --ground: #E4E8E9;
   --surface: #FFFFFF;
-  --surface-sunk: #ECF0F0;
+  --surface-sunk: #D6DCDE;
   --ink: #121A1D;
   --ink-soft: #3A4A50;
   --muted: #64767C;
-  --rule: #D5DDDE;
+  --rule: #C8D1D3;
   --accent-1: #0C6F79;      /* first actor, e.g. Iceberg */
   --accent-1-wash: #DDEFF0;
   --accent-2: #8B2F3E;      /* second actor, e.g. Pinot */
