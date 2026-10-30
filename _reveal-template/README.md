@@ -98,6 +98,7 @@ Write flat markup. The loader adds the frame.
 | `layout-split` | Bullets left, diagram right (5:7). Add `even` for 1:1. Wrap bullets plus a footnote in `<div class="left-stack">` |
 | `layout-full` | Title plus one wide diagram or table, and an optional `<p class="footnote">` below it |
 | `layout-statement` | One sentence in a `<p>` or `<blockquote>`, optional `<cite>`. No title |
+| `layout-flow` | Title plus free content stacked top to bottom: code, columns, mixed blocks |
 
 The footer shows the chapter label from `index.html`. Set `data-chapter` on a `<section>` to
 override it.
@@ -130,6 +131,12 @@ or `class="highlight good"` (positive green).
 
 `--accent-1` and `--accent-2` are the two main actors of a talk (use `.ice` and `.wine` for inline
 text), and `--accent-3` marks costs and warnings. Change the values in `:root` for another talk.
+
+## Code
+
+Add `template/vendor/reveal/plugin/highlight/highlight.js` (and `monokai.css`) to `index.html` to
+turn on syntax highlighting; the loader registers the plugin when it is present. Write code as
+`<pre><code class="language-rust" data-line-numbers="|1-3|5">`; each `|` step is a fragment.
 
 ## Hand-drawn diagrams
 

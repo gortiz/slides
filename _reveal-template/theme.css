@@ -599,3 +599,31 @@ html.sketch-static .reveal svg.sketch .fragment.current-visible { display: none;
   top: 50%; transform: translateY(-50%); flex-direction: column; gap: 22px; align-items: center;
 }
 .reveal .frame > .qr-group a.qr .qr-label { font-size: 13px; }
+
+/* ---------- layout-flow: title plus free content stacked top to bottom ---------- */
+/* For slides that mix code, columns and diagrams. The frame becomes a flex column; the footer
+   (the ::after) is pushed to the bottom. */
+.reveal section.layout-flow .frame { display: flex; flex-direction: column; gap: 14px; }
+.reveal section.layout-flow .frame > h2 { flex: 0 0 auto; min-height: calc(var(--title-row) - 14px); }
+.reveal section.layout-flow .frame > :not(h2) { flex: 0 1 auto; min-height: 0; }
+.reveal section.layout-flow .frame::after { margin-top: auto; align-self: stretch; text-align: left; }
+
+/* ---------- code blocks (reveal.js highlight plugin) ---------- */
+.reveal pre {
+  position: relative;
+  margin: 0;
+  font-size: 0.55em;
+  line-height: 1.35;
+  text-align: left;
+  font-family: var(--font-mono);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+.reveal pre code {
+  display: block;
+  font-size: 1em;
+  padding: 8px 12px;
+  overflow: auto;
+  max-height: 520px;
+  word-wrap: normal;
+  border-radius: 4px;
+}

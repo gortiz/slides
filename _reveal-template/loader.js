@@ -163,7 +163,8 @@
     }
     stampTimings(slides, deck.chapters);
     document.dispatchEvent(new CustomEvent("deck:assembled"));
-    const plugins = window.RevealNotes ? [window.RevealNotes] : [];
+    // Plugins load only when index.html includes their script: notes always, highlight for talks with code.
+    const plugins = [window.RevealNotes, window.RevealHighlight].filter(Boolean);
     // `?all-fragments` shows every fragment at once: handy to review a deck for overflow.
     const reviewMode = new URLSearchParams(location.search).has("all-fragments");
     await Reveal.initialize({

@@ -1,0 +1,93 @@
+<section class="layout-cover">
+  <img class="art" src="assets/two-bridges.png" alt="">
+  <div class="cover">
+    <h1>Native Speed, Java Comfort</h1>
+    <p class="deck">Calling Rust from the JVM with Project Panama</p>
+    <p class="who">Gonzalo Ortiz · Apache Pinot PMC · StarTree</p>
+  </div>
+  <div class="qr-group">
+    <a class="qr" href="https://gortizja.com/"></a>
+  </div>
+  <aside class="notes">
+    <ul>
+      <li>Apache Pinot @ StarTree, real-time OLAP DB in Java</li>
+      <li>hands up: who used JNI? still up if you <em>enjoyed</em> it? (laugh)</li>
+      <li>today: same library twice — JNI vs Panama — on a real Rust crate, not hello-world</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>Why call native code?</h2>
+  <ul>
+    <li class="fragment"><strong style="color:var(--rust)">Ecosystem access</strong> — reuse Rust/C/C++ libraries that already exist.<br>
+      <small style="color:#aaa;">ML inference (ONNX), compression (zstd), databases. Don't rewrite them.</small></li>
+    <li class="fragment"><strong style="color:var(--rust)">Ergonomics</strong> — some problems are more natural with direct memory control.<br>
+      <small style="color:#aaa;">SIMD intrinsics, memory-mapped structures, zero-copy I/O.</small></li>
+    <li class="fragment"><strong style="color:var(--rust)">Performance</strong> — bypass JIT/GC limits…<br>
+      <small style="color:#aaa;">Be careful — the JVM is surprisingly good. Native isn't a magic speed button.</small></li>
+  </ul>
+  <aside class="notes">
+    <ul>
+      <li>3 reasons: <strong>ecosystem · ergonomics · performance</strong></li>
+      <li>ecosystem = the most common one (ONNX, zstd, …)</li>
+      <li>perf — <em>be careful</em>. JIT is great. Native isn't a magic button</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>The two bridges</h2>
+  <img src="assets/two-bridges.png" alt="Java and Rust connected by two bridges, JNI on top and Panama on the bottom" class="two-bridges-img" />
+  <p style="font-size:0.75em; color:#aaa; margin-top:0.6em; padding-right:5em;"><span class="tag-jni">JNI</span> — in the JDK since Java 1.1 &nbsp;·&nbsp; <span class="tag-panama">Panama FFM</span> — finalized in Java 22</p>
+  <aside class="notes">
+    <ul>
+      <li>JNI: shipped in JDK since 1.1</li>
+      <li>Panama FFM: finalized in Java 22</li>
+      <li>both bridges go <em>both directions</em> (downcall + upcall)</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>Same call, two philosophies</h2>
+  <div class="columns">
+    <div>
+      <p style="color:var(--jni); font-weight:bold; font-size:0.72em; margin:0 0 0.3em;">JNI — object-centric</p>
+      <pre><code class="language-toml" style="font-size:0.7em;">[lib]
+crate-type = ["cdylib"] 
+
+[dependencies]
+jni = "0.21"</code></pre>
+     <ul style="font-size:0.6em; margin-top:1em; padding-left:1.1em; line-height:1.45;">
+        <li>Rust receives Java objects</li>
+        <li>JVM may pin objects</li>
+        <li>Rust crate coupled to the JVM</li>
+      </ul>
+    </div>
+    <div>
+      <p style="color:var(--panama); font-weight:bold; font-size:0.72em; margin:0 0 0.3em;">Panama — mem-centric</p>
+      <pre><code class="language-toml" style="font-size:0.7em;">[lib]
+crate-type = ["cdylib"]
+
+
+
+</code></pre>
+      <ul style="font-size:0.6em; margin-top:1em; padding-left:1.1em; line-height:1.45;">
+        <li>Rust receives raw memory</li>
+        <li>No GC interaction — data lives off-heap</li>
+        <li>Same standard C ABI</li>
+        <ul style="font-size:0.8em; list-style:square; margin:0.2em 0 0 1.2em;"><li>Already used by Python, Go, Node…</li></ul>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">
+    <ul>
+      <li>JNI: needs the <code>jni</code> crate — Rust now depends on JVM types and calling conventions</li>
+      <li>Panama: just <code>cdylib</code>. Rust doesn't know Java exists</li>
+      <li>JNI = object-centric: lets native pretend it has Java objects → hidden cost</li>
+      <li>Panama = memory-centric: no objects cross the boundary — JVM has nothing to do</li>
+      <li>bonus: Rust exposes the same C ABI Python / Go / Node already use</li>
+    </ul>
+  </aside>
+</section>

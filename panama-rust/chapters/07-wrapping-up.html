@@ -1,0 +1,180 @@
+<section class="layout-chapter">
+  <div class="chapter">
+    <span class="name">Wrapping up</span>
+  </div>
+  <aside class="notes">
+    <ul>
+      <li>section pivot — wrapping up</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>What we built today</h2>
+  <p style="color:#aaa; font-size:0.82em; margin-top:-0.2em;">Five shapes that compose into <em>any</em> native API</p>
+  <ul class="shapes-recap">
+    <li><span class="chk">✓</span> Primitives <span class="ex">— add(a, b)</span></li>
+    <li><span class="chk">✓</span> Strings <span class="ex">— isMatch(pattern, haystack)</span></li>
+    <li><span class="chk">✓</span> Opaque native handle <span class="ex">— a compiled Regex</span></li>
+    <li><span class="chk">✓</span> Struct return <span class="ex">— find() → {found, start, end}</span></li>
+    <li><span class="chk">✓</span> Callback / upcall <span class="ex">— streaming findAll</span></li>
+  </ul>
+  <p class="recap-takeaway fragment">Master these five — the rest of any native API is just composition.</p>
+  <aside class="notes">
+    <ul>
+      <li>the pivot: we're done building — step back and look at the shapes</li>
+      <li>five fundamental shapes: primitives, strings, opaque handle, struct return, callback/upcall</li>
+      <li>all built on <strong>Panama</strong>; JNI shown only where it taught us something (mangled names, hidden copies, N upcalls)</li>
+      <li>if we can do these five, we can do anything → so <em>should</em> we? (next slide)</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>When should you reach for native?</h2>
+  <table class="grid">
+    <thead>
+      <tr><th>Reason</th><th>Worth it?</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Ecosystem</strong></td>
+        <td style="color:#2ecc71;">✓ Yes</td>
+        <td style="font-size:0.8em;">Now it is easier to use existing libraries</td>
+      </tr>
+      <tr>
+        <td><strong>Ergonomics</strong></td>
+        <td style="color:#2ecc71;">✓ Yes</td>
+        <td style="font-size:0.8em;">Genuine JVM blind spots</td>
+      </tr>
+      <tr>
+        <td><strong>Performance</strong></td>
+        <td style="color:#e67e22;">⚠ Verify first</td>
+        <td style="font-size:0.8em;">JIT/GC are good. Measure</td>
+      </tr>
+    </tbody>
+  </table>
+  <aside class="notes">
+    <ul>
+      <li>ecosystem ✓ — best reason, library already exists</li>
+      <li>ergonomics ✓ — SIMD, mmap, deterministic latency (real JVM blind spots)</li>
+      <li>performance ⚠ — be skeptical. Bridge has fixed cost; String calls always pay UTF-16↔UTF-8</li>
+      <li>(if time) regex is fast because of <em>algorithm</em> (Thompson NFA), not Rust — picked for the API surface, not the speed</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>Performance tips</h2>
+  <ul>
+    <li class="fragment">Each call is expensive.</li>
+       <ul class="fragment" style="font-size:0.95em; line-height:1.8;">
+         <li>JNI slower than Panama</li>
+       </ul>
+    <li class="fragment">One broad &gt; many narrow.</li>
+    <li class="fragment">Shared memory &gt; copies.</li>
+    <li class="fragment">Do not use Java Strings.</li>
+    <li class="fragment">Use async-profiler — not JFR.</li>
+  </ul>
+  <aside class="notes">
+    <ul>
+      <li>each call costs in BOTH bridges (state transition, safepoints, GC); JNI adds pinning + ref-table mgmt</li>
+      <li>one broad call &gt; many narrow — batch on the native side; shared memory &gt; copies</li>
+      <li>avoid Java Strings — work with UTF-8 <code>byte[]</code></li>
+      <li>profile with async-profiler, NOT JFR (JFR stops at the boundary)</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>Toolbox</h2>
+  <ul>
+    <li><strong style="color:var(--accent)">Build</strong> — <code>rust-maven-plugin</code> bundles native libs inside the jar.</li>
+    <li class="fragment"><strong style="color:var(--accent)">Debugging</strong> — Two debuggers, two windows.</li>
+    <li class="fragment"><strong style="color:var(--accent)">Logging</strong> — Rust <code>log</code> / <code>tracing</code> don't feed SLF4J.</li>
+    <li class="fragment"><strong style="color:var(--accent)">IDEs &amp; AI</strong> — No cross-boundary refactoring. AI shines for translation.</li>
+    <li class="fragment"><strong style="color:var(--accent)">Two heaps, one process</strong> — GC knows nothing about Rust allocations.</li>
+  </ul>
+  <aside class="notes">
+    <ul>
+      <li>build: <code>rust-maven-plugin</code> / <code>rust-gradle-plugin</code> bundle the .so in the jar. Add <code>debug = 1</code> to release for DWARF symbols</li>
+      <li>debugging: 2 debuggers, 2 windows. <code>RUST_BACKTRACE=1</code> in dev. VS Code + CodeLLDB does both</li>
+      <li>logging: Rust <code>log</code>/<code>tracing</code> don't feed SLF4J — bridge yourself</li>
+      <li>IDEs: rename a JNI fn in Java → Rust silently breaks. AI helps with translation prompts</li>
+      <li>two heaps: every <code>into_raw</code> needs a <code>from_raw</code>. Use Arena cleanup hooks to make it structural</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-statement" data-visibility="hidden">
+  <p>⚠️ One last critical part</p>
+  <aside class="notes">
+    <ul>
+      <li>pause beat — <em>one last thing you cannot get wrong</em></li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow danger-slide" data-visibility="hidden">
+  <h2 style="color:#e74c3c;">⚠ A panic will kill the JVM</h2>
+  <pre><code class="language-rust">let regex = Regex::new(&pattern).expect("Invalid regex");
+//                               ^^^^^^^ panic on invalid input!</code></pre>
+  <div class="callout danger-callout" style="margin-top:1em;">
+    A panic across <code>extern "C"</code> is <strong>undefined behavior</strong>.<br>
+    No stack trace. No exception. The JVM just dies.
+  </div>
+  <aside class="notes">
+    <ul>
+      <li>we used <code>.unwrap()</code> / <code>.expect()</code> everywhere</li>
+      <li>panic across <code>extern "C"</code> = UB → JVM dies</li>
+      <li>no stack trace, no exception, just process gone</li>
+      <li>this IS the production footgun</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow" data-visibility="hidden">
+  <h2>Catch panics at the boundary</h2>
+  <pre><code class="language-rust" data-line-numbers="|5-7|9-12">// Rust: catch the panic, signal failure with a null pointer
+pub extern "C" fn create(
+    pattern_ptr: *const u8, pattern_len: usize,
+) -> *mut RegexHandle {
+    let result = std::panic::catch_unwind(|| {
+        let pattern = bytes_to_str(pattern_ptr, pattern_len)?;
+        Ok(Regex::new(pattern)?)
+    });
+    match result {
+        Ok(Ok(regex)) => Box::into_raw(Box::new(RegexHandle { regex })),
+        _ => std::ptr::null_mut(), // in case of error
+    }
+}</code></pre>
+  <div class="callout fragment" style="font-size:0.75em; margin-top:0.8em;">
+    <strong style="color:var(--accent);">Alternative to returning <code>null</code>?</strong>
+    &nbsp; Why not <em>throw an exception</em>?
+  </div>
+  <aside class="notes">
+    <ul>
+      <li><code>catch_unwind</code> wraps the body — panic caught before crossing the boundary</li>
+      <li>signal failure with a sentinel: null pointer</li>
+      <li>🎤 ASK AUDIENCE: "why not throw an exception?"</li>
+      <li>answer: Panama has no <code>env.throw</code>. No <code>JNIEnv</code> = no way to raise a Java exception from Rust. Java wrapper does it: sees null → throws</li>
+    </ul>
+  </aside>
+</section>
+
+<section class="layout-flow">
+  <h2>Same islands, a better bridge</h2>
+  <img src="assets/two-bridges.png" alt="Java and Rust connected by two bridges, JNI on top and Panama on the bottom" class="two-bridges-img" />
+  <p style="font-size:0.8em; color:#aaa; margin-top:0.5em;">
+    <span class="tag-jni">JNI</span> hands native code the JVM &nbsp;·&nbsp; <span class="tag-panama">Panama</span> hands it plain memory
+  </p>
+  <aside class="notes">
+    <ul>
+      <li>bookend — we opened on these two bridges; we close on them</li>
+      <li>the philosophical shift: <span class="tag-jni">JNI</span> is <em>object-centric</em> — native pretends to hold Java objects → pinning, string lookups, hidden copies, and a Rust crate coupled to the JVM</li>
+      <li><span class="tag-panama">Panama</span> is <em>memory-centric</em> — nothing crosses the boundary but pointers and bytes</li>
+      <li>what that buys: no JVM types in your Rust · the same C ABI Python/Go/Node already use · costs are explicit &amp; JIT-visible · deterministic off-heap lifetimes via <code>Arena</code> · <code>cbindgen</code> + <code>jextract</code> generate the boilerplate</li>
+      <li>the takeaway: with Panama, calling native code is a <strong>library decision, not a scary one</strong></li>
+    </ul>
+  </aside>
+</section>

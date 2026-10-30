@@ -1,0 +1,56 @@
+<section class="layout-flow">
+  <h2><code>add(a, b)</code></h2>
+  <div class="columns" style="gap:0.8em;">
+    <div>
+      <p style="color:var(--jni); font-weight:bold; font-size:0.6em; margin:0 0 0.1em;">JNI</p>
+      <pre style="margin:0;"><code class="language-rust" style="font-size:0.7em;" data-fragment-index="0" data-line-numbers="|3|2,4-5|6-7,8">#[no_mangle]
+pub extern "system"
+fn Java_com_example_Lib_add(
+    _env: JNIEnv, // Used to access the JVM
+    _class: JClass, // Our "Lib" class
+    a: jint,
+    b: jint,
+) -> jint {
+    add(a, b)
+}</code></pre>
+    </div>
+    <div>
+      <p style="color:var(--panama); font-weight:bold; font-size:0.6em; margin:0 0 0.1em;">Panama</p>
+      <pre style="margin:0;"><code class="language-rust" style="font-size:0.7em;" data-fragment-index="0" data-line-numbers="|3|2|3">#[no_mangle]
+pub extern "C"
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}</code></pre>
+    </div>
+  </div>
+  <div class="columns" style="gap:0.8em; margin-top:0.2em;">
+    <div>
+      <pre style="margin:0;"><code class="language-java" style="font-size:0.7em;" data-fragment-index="0" data-line-numbers="|3|2|3,6">public class Lib {
+    static { System.loadLibrary("mylib"); }
+    public static native int add(int a, int b);
+}
+
+int r = Lib.add(2, 3);   // → 5</code></pre>
+    </div>
+    <div>
+      <pre style="margin:0;"><code class="language-java" style="font-size:0.7em;" data-fragment-index="0" data-line-numbers="|5-8|3-4|10">private static final MethodHandle ADD;
+static {
+    SymbolLookup lib = SymbolLookup.libraryLookup(
+        "libmylib.so", Arena.global());
+    ADD = Linker.nativeLinker().downcallHandle(
+        lib.find("add").orElseThrow(),
+        FunctionDescriptor.of(
+            JAVA_INT, JAVA_INT, JAVA_INT));
+}
+int r = (int) ADD.invoke(2, 3);   // → 5</code></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    <ul>
+      <li>same function, both bridges — top row Rust, bottom Java; JNI left, Panama right</li>
+      <li><strong>Panama (focus)</strong>: plain <code>extern "C"</code> <code>add</code>; Java wires it with <code>libraryLookup</code> + <code>downcallHandle</code> + a <code>FunctionDescriptor</code>, then <code>ADD.invoke</code></li>
+      <li><strong>JNI (quick contrast)</strong>: mangled name, injected <code>JNIEnv</code>/<code>JClass</code>, but a plain static call</li>
+      <li>verdict: for trivial cases JNI wins on ergonomics — Panama's boilerplate is visible. Payoff comes when the function does something real</li>
+    </ul>
+  </aside>
+</section>
