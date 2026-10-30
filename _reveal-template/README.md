@@ -168,7 +168,9 @@ Put `<a class="qr" href="https://…" data-logo="spotify"></a>` anywhere in a sl
 170 px in the bottom-left corner of the body, so keep that corner free on slides with a QR. On a
 `layout-full` slide the footnote moves right to make room. Add `class="qr at-right"` to use the
 bottom-right corner instead when the bottom-left is busy. `class="qr at-top-right"` puts the code
-beside the title, for slides whose bottom corners are both busy. `data-logo` is one of the
+beside the title, for slides whose bottom corners are both busy. Wrap several codes in `<div class="qr-group">` to show
+them in a row in the top-right corner, as on a cover slide; `qr-group vertical` stacks them
+on the right edge instead. `data-logo` is one of the
 keys in `qr.js` (`spotify`, `youtube`, `apache`, `startree`); add a file under `logos/` and a key to
 add more. `data-label` overrides the caption, which defaults to the host name; `data-label=""` drops it.
 

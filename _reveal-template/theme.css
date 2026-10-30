@@ -587,3 +587,15 @@ html.sketch-static .reveal svg.sketch .fragment.current-visible { display: none;
   left: auto; right: var(--pad-x); bottom: auto; top: 24px; align-items: flex-end;
 }
 .reveal .frame > a.qr.at-top-right .qr-label { text-align: right; }
+
+/* .qr-group: a row of QR codes in the top-right corner, e.g. on a cover slide */
+.reveal .slides section .frame > .qr-group {
+  position: absolute; top: 24px; right: var(--pad-x);
+  display: flex; gap: 28px; align-items: flex-start;
+}
+.reveal .frame > .qr-group a.qr .qr-code { width: 150px; height: 150px; }
+/* .qr-group.vertical: a column on the right edge, vertically centred in the body */
+.reveal .slides section .frame > .qr-group.vertical {
+  top: 50%; transform: translateY(-50%); flex-direction: column; gap: 22px; align-items: center;
+}
+.reveal .frame > .qr-group a.qr .qr-label { font-size: 13px; }
